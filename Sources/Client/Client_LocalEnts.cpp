@@ -111,7 +111,7 @@ namespace spades {
 			}
 		}
 
-		stmp::optional<std::tuple<Player &, hitTag_t>> Client::HotTrackedPlayer() {
+		stmp::optional<Player &> Client::HotTrackedPlayer() {
 			if (!IsFirstPerson(GetCameraMode()))
 				return {};
 
@@ -129,13 +129,11 @@ namespace spades {
 
 			Player &player = world->GetPlayer(result.playerId.value()).value();
 
-			// don't hot track enemies (non-spectator only)
-			//if (player.GetTeamId() != cameraTargetPlayer.GetTeamId() &&
-			//    cameraTargetPlayer.GetTeamId() < 2) {
+			// don't hot track spectators
 			if (cameraTargetPlayer.IsSpectator()) {
 				return {};
 			}
-			return std::tuple<Player &, hitTag_t>{player, result.hitFlag};
+			return player;
 		}
 
 		bool Client::IsMuted() {

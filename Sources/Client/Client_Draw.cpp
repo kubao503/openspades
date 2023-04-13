@@ -292,32 +292,34 @@ namespace spades {
 			if ((int)cg_playerNames == 0)
 				return;
 
-			Player &p = GetWorld()->GetLocalPlayer().value();
+			Player &localPlayer = GetWorld()->GetLocalPlayer().value();
 
-			auto hottracked = HotTrackedPlayer();
-			if (hottracked) {
-				Player &hottrackedPlayer = std::get<0>(*hottracked);
-
-				Vector3 posxyz = Project(hottrackedPlayer.GetEye());
-				Vector2 pos = {posxyz.x, posxyz.y};
-				char buf[64];
-				if ((int)cg_playerNames == 1) {
-					float dist = (hottrackedPlayer.GetEye() - p.GetEye()).GetLength();
-					int idist = (int)floorf(dist + .5f);
-					sprintf(buf, "%s [%d%s]", hottrackedPlayer.GetName().c_str(), idist,
-					        (idist == 1) ? "block" : "blocks");
-				} else
-					sprintf(buf, "%s", hottrackedPlayer.GetName().c_str());
-
-				pos.y += (int)cg_playerNameY;
-				pos.x += (int)cg_playerNameX;
-
-				IFont &font = fontManager->GetGuiFont();
-				Vector2 size = font.Measure(buf);
-				pos.x -= size.x * .5f;
-				pos.y -= size.y;
-				font.DrawShadow(buf, pos, 1.f, MakeVector4(1, 1, 1, 1), MakeVector4(0, 0, 0, 0.5));
+			auto hottrackedPlayer = HotTrackedPlayer();
+			if (hottrackedPlayer) {
+				DrawPlayerName(hottrackedPlayer.get(), localPlayer);
 			}
+		}
+
+		void Client::DrawPlayerName(Player &hottrackedPlayer, Player &localPlayer) {
+			Vector3 posxyz = Project(hottrackedPlayer.GetEye());
+			Vector2 pos = {posxyz.x, posxyz.y};
+			char buf[64];
+			if ((int)cg_playerNames == 1) {
+				float dist = (hottrackedPlayer.GetEye() - localPlayer.GetEye()).GetLength();
+				int idist = (int)floorf(dist + .5f);
+				sprintf(buf, "%s [%d%s]", hottrackedPlayer.GetName().c_str(), idist,
+				        (idist == 1) ? "block" : "blocks");
+			} else
+				sprintf(buf, "%s", hottrackedPlayer.GetName().c_str());
+
+			pos.y += (int)cg_playerNameY;
+			pos.x += (int)cg_playerNameX;
+
+			IFont &font = fontManager->GetGuiFont();
+			Vector2 size = font.Measure(buf);
+			pos.x -= size.x * .5f;
+			pos.y -= size.y;
+			font.DrawShadow(buf, pos, 1.f, MakeVector4(1, 1, 1, 1), MakeVector4(0, 0, 0, 0.5));
 		}
 
 		void Client::DrawDebugAim() {

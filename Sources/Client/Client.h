@@ -294,7 +294,7 @@ namespace spades {
 			bool IsLimboViewActive();
 			void SpawnPressed();
 
-			stmp::optional<std::tuple<Player &, hitTag_t>> HotTrackedPlayer();
+			stmp::optional<Player &> HotTrackedPlayer();
 
 			// effects (local entity, etc)
 			std::vector<DynamicLightParam> flashDlights;
@@ -378,14 +378,15 @@ namespace spades {
 			void DrawSpectateHUD();
 
 			void DrawHottrackedPlayerName();
+			void DrawPlayerName(Player &hottrackedPlayer, Player &localPlayer);
 			void DrawHurtScreenEffect();
 			void DrawHurtSprites();
 			void DrawHealth();
 			void DrawAlert();
 			void DrawDebugAim();
 			void DrawStats();
-
 			void DrawScene();
+			void DrawPlayerHottrack(Player &player);
 			void AddGrenadeToScene(Grenade &);
 			void AddDebugObjectToScene(const OBB3 &, const Vector4 &col = MakeVector4(1, 1, 1, 1));
 			void DrawCTFObjects();
