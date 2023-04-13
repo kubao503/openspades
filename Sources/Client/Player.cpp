@@ -767,7 +767,8 @@ namespace spades {
 
 			// in AoS 0.75's way
 			Vector3 o = orientation;
-			Vector3 rec = weapon->GetRecoil();
+			float recoilFactor = .1f;
+			Vector3 rec = weapon->GetRecoil() * recoilFactor;
 			float upLimit = Vector3::Dot(GetFront2D(), o);
 			upLimit -= 0.03f; // ???
 
