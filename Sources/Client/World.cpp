@@ -49,6 +49,16 @@ namespace spades {
 		}
 		World::~World() { SPADES_MARK_FUNCTION(); }
 
+		void World::CheckForSpectator() {
+			isThereSpectator = false;
+			for (size_t i = 0; i < GetNumPlayerSlots(); i++) {
+				auto player = GetPlayer(static_cast<unsigned int>(i));
+				if (player) {
+					isThereSpectator |= player->IsSpectator();
+				}
+			}
+		}
+
 		size_t World::GetNumPlayers() {
 			size_t numPlayers = 0;
 			for (const auto &p : players) {
@@ -66,6 +76,8 @@ namespace spades {
 			for (const auto &player : players)
 				if (player)
 					player->Update(dt);
+
+			CheckForSpectator();
 
 			while (!blockRegenerationQueue.empty()) {
 				auto it = blockRegenerationQueue.begin();

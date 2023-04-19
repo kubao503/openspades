@@ -683,12 +683,8 @@ namespace spades {
 					}
 				}
 
-				for (size_t i = 0; i < world->GetNumPlayerSlots(); i++) {
-					auto otherPlayer = world->GetPlayer(static_cast<unsigned int>(i));
-					if (otherPlayer) {
-						DrawPlayerHottrack(*otherPlayer);
-					}
-				}
+				if (!world->IsThereSpectator())
+					HottrackAllPlayers();
 			}
 
 			for (size_t i = 0; i < flashDlights.size(); i++)
@@ -697,6 +693,15 @@ namespace spades {
 			flashDlightsOld.swap(flashDlights);
 
 			renderer->EndScene();
+		}
+
+		void Client::HottrackAllPlayers() {
+			for (size_t i = 0; i < world->GetNumPlayerSlots(); i++) {
+				auto otherPlayer = world->GetPlayer(static_cast<unsigned int>(i));
+				if (otherPlayer) {
+					DrawPlayerHottrack(*otherPlayer);
+				}
+			}
 		}
 
 		void Client::DrawPlayerHottrack(Player &otherPlayer)

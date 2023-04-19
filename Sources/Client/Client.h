@@ -386,6 +386,7 @@ namespace spades {
 			void DrawDebugAim();
 			void DrawStats();
 			void DrawScene();
+			void HottrackAllPlayers();
 			void DrawPlayerHottrack(Player &player);
 			void AddGrenadeToScene(Grenade &);
 			void AddDebugObjectToScene(const OBB3 &, const Vector4 &col = MakeVector4(1, 1, 1, 1));

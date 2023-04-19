@@ -77,6 +77,8 @@ namespace spades {
 			std::shared_ptr<GameProperties> gameProperties;
 
 			std::array<std::unique_ptr<Player>, NumPlayerSlots> players;
+			bool isThereSpectator = false;
+
 			std::array<PlayerPersistent, NumPlayerSlots> playerPersistents;
 			stmp::optional<int> localPlayerIndex;
 
@@ -92,12 +94,16 @@ namespace spades {
 
 			void ApplyBlockActions();
 
+			void CheckForSpectator();
+
 		public:
 			World(const std::shared_ptr<GameProperties> &);
 			~World();
 			const Handle<GameMap> &GetMap() { return map; }
 			GameMapWrapper &GetMapWrapper() { return *mapWrapper; }
 			float GetTime() { return time; }
+
+			bool IsThereSpectator() const { return isThereSpectator; }
 
 			/** Returns a non-null reference to `GameProperties`. */
 			const std::shared_ptr<GameProperties> &GetGameProperties() { return gameProperties; }
