@@ -694,9 +694,12 @@ namespace spades {
 			{
 				GLProfiler::Context p(*profiler, "Debug Line");
 				device->Enable(IGLDevice::Blend, false);
+				device->Enable(IGLDevice::DepthTest, false);
+				RenderDebugLines();
+
+				// Clean-up
 				device->Enable(IGLDevice::DepthTest, true);
 				device->DepthFunc(IGLDevice::Less);
-				RenderDebugLines();
 			}
 		}
 
