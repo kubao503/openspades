@@ -124,3 +124,5 @@ ipch/
 *.sln
 *.vcxproj
 OpenSpades.rc
+
+CMakeSettings.json

@@ -609,6 +609,8 @@ namespace spades {
 					if (otherPlayer) {
 						SPAssert(clientPlayers[i]);
 						clientPlayers[i]->AddToScene();
+
+						DrawPlayerHottrack(*otherPlayer);
 					}
 				}
 
@@ -682,9 +684,6 @@ namespace spades {
 						}
 					}
 				}
-
-				if (!world->IsThereSpectator())
-					HottrackAllPlayers();
 			}
 
 			for (size_t i = 0; i < flashDlights.size(); i++)
@@ -693,15 +692,6 @@ namespace spades {
 			flashDlightsOld.swap(flashDlights);
 
 			renderer->EndScene();
-		}
-
-		void Client::HottrackAllPlayers() {
-			for (size_t i = 0; i < world->GetNumPlayerSlots(); i++) {
-				auto otherPlayer = world->GetPlayer(static_cast<unsigned int>(i));
-				if (otherPlayer) {
-					DrawPlayerHottrack(*otherPlayer);
-				}
-			}
 		}
 
 		void Client::DrawPlayerHottrack(Player &otherPlayer)
@@ -713,7 +703,7 @@ namespace spades {
 				return;
 
 			IntVector3 col = world->GetTeam(otherPlayer.GetTeamId()).color;
-			Vector4 color = Vector4::Make(col.x / 255.f, col.y / 255.f, col.z / 255.f, 1.f);
+			Vector4 color = Vector4::Make(col.x / 255.f, col.y / 255.f, col.z / 255.f, .7f);
 
 			Player::HitBoxes hb = otherPlayer.GetHitBoxes();
 			AddDebugObjectToScene(hb.head, color);
