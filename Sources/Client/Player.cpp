@@ -1028,8 +1028,8 @@ namespace spades {
 			SPADES_MARK_FUNCTION();
 
 			float f = fsynctics * 32.f;
-			float nx = f * velocity.x + position.x;
-			float ny = f * velocity.y + position.y;
+			float nextX = f * velocity.x + position.x;
+			float nextY = f * velocity.y + position.y;
 			bool climb = false;
 			float offset, m;
 			if (input.crouch) {
@@ -1040,7 +1040,7 @@ namespace spades {
 				m = 1.35f;
 			}
 
-			float nz = position.z + offset;
+			float zWithOffset = position.z + offset;
 
 			float z;
 			const Handle<GameMap> &map = world.GetMap();
@@ -1054,18 +1054,19 @@ namespace spades {
 
 			z = m;
 
-			while (z >= -1.36f && !map->ClipBox(nx + f, position.y - .45f, nz + z) &&
-			       !map->ClipBox(nx + f, position.y + .45f, nz + z))
+			while (z >= -1.36f && !map->ClipBox(nextX + f, position.y - .45f, zWithOffset + z) &&
+			       !map->ClipBox(nextX + f, position.y + .45f, zWithOffset + z))
 				z -= 0.9f;
 			if (z < -1.36f)
-				position.x = nx;
-			else if (!(input.crouch) && orientation.z < 0.5f && !input.sprint) {
+				position.x = nextX;
+			// else if (!(input.crouch) && orientation.z < 0.5f && !input.sprint) {
+			else if (!(input.crouch) && !input.sprint) {
 				z = 0.35f;
-				while (z >= -2.36f && !map->ClipBox(nx + f, position.y - .45f, nz + z) &&
-				       !map->ClipBox(nx + f, position.y + .45f, nz + z))
+				while (z >= -2.36f && !map->ClipBox(nextX + f, position.y - .45f, zWithOffset + z) &&
+				       !map->ClipBox(nextX + f, position.y + .45f, zWithOffset + z))
 					z -= 0.9f;
 				if (z < -2.36f) {
-					position.x = nx;
+					position.x = nextX;
 					climb = true;
 				} else {
 					velocity.x = 0.f;
@@ -1081,18 +1082,19 @@ namespace spades {
 
 			z = m;
 
-			while (z >= -1.36f && !map->ClipBox(position.x - .45f, ny + f, nz + z) &&
-			       !map->ClipBox(position.x + .45f, ny + f, nz + z))
+			while (z >= -1.36f && !map->ClipBox(position.x - .45f, nextY + f, zWithOffset + z) &&
+			       !map->ClipBox(position.x + .45f, nextY + f, zWithOffset + z))
 				z -= 0.9f;
 			if (z < -1.36f)
-				position.y = ny;
-			else if (!(input.crouch) && orientation.z < 0.5f && !input.sprint && !climb) {
+				position.y = nextY;
+			//else if (!(input.crouch) && orientation.z < 0.5f && !input.sprint && !climb) {
+			else if (!(input.crouch) && !input.sprint && !climb) {
 				z = 0.35f;
-				while (z >= -2.36f && !map->ClipBox(position.x - .45f, ny + f, nz + z) &&
-				       !map->ClipBox(position.x + .45f, ny + f, nz + z))
+				while (z >= -2.36f && !map->ClipBox(position.x - .45f, nextY + f, zWithOffset + z) &&
+				       !map->ClipBox(position.x + .45f, nextY + f, zWithOffset + z))
 					z -= 0.9f;
 				if (z < -2.36f) {
-					position.y = ny;
+					position.y = nextY;
 					climb = true;
 				} else {
 					velocity.y = 0.f;
@@ -1105,26 +1107,26 @@ namespace spades {
 				velocity.x *= .5f;
 				velocity.y *= .5f;
 				lastClimbTime = world.GetTime();
-				nz -= 1.f;
+				zWithOffset -= 1.f;
 				m = -1.35f;
 			} else {
 				if (velocity.z < 0.f)
 					m = -m;
-				nz += velocity.z * fsynctics * 32.f;
+				zWithOffset += velocity.z * fsynctics * 32.f;
 			}
 
 			airborne = true;
-			if (map->ClipBox(position.x - .45f, position.y - .45f, nz + m) ||
-			    map->ClipBox(position.x - .45f, position.y + .45f, nz + m) ||
-			    map->ClipBox(position.x + .45f, position.y - .45f, nz + m) ||
-			    map->ClipBox(position.x + .45f, position.y + .45f, nz + m)) {
+			if (map->ClipBox(position.x - .45f, position.y - .45f, zWithOffset + m) ||
+			    map->ClipBox(position.x - .45f, position.y + .45f, zWithOffset + m) ||
+			    map->ClipBox(position.x + .45f, position.y - .45f, zWithOffset + m) ||
+			    map->ClipBox(position.x + .45f, position.y + .45f, zWithOffset + m)) {
 				if (velocity.z >= 0.f) {
 					wade = position.z > 61.f;
 					airborne = false;
 				}
 				velocity.z = 0.f;
 			} else {
-				position.z = nz - offset;
+				position.z = zWithOffset - offset;
 			}
 
 			RepositionPlayer(position);
