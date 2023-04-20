@@ -610,7 +610,8 @@ namespace spades {
 						SPAssert(clientPlayers[i]);
 						clientPlayers[i]->AddToScene();
 
-						DrawPlayerHottrack(*otherPlayer);
+						if (hottrackVisible)
+							DrawPlayerHottrack(*otherPlayer);
 					}
 				}
 

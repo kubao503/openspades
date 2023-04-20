@@ -55,7 +55,7 @@ DEFINE_SPADES_SETTING(cg_keyToolBlock, "2");
 DEFINE_SPADES_SETTING(cg_keyToolWeapon, "3");
 DEFINE_SPADES_SETTING(cg_keyToolGrenade, "4");
 DEFINE_SPADES_SETTING(cg_keyReloadWeapon, "r");
-DEFINE_SPADES_SETTING(cg_keyFlashlight, "f");
+DEFINE_SPADES_SETTING(cg_keyHottrack, "f");
 DEFINE_SPADES_SETTING(cg_keyLastTool, "");
 
 DEFINE_SPADES_SETTING(cg_keyMoveLeft, "a");
@@ -562,16 +562,8 @@ namespace spades {
 						TakeScreenShot(false);
 					} else if (CheckKey(cg_keySaveMap, name) && down) {
 						TakeMapShot();
-					} else if (CheckKey(cg_keyFlashlight, name) && down) {
-						// spectators and dead players should not be able to toggle the flashlight
-						if (world->GetLocalPlayer()->IsSpectator() ||
-						    !world->GetLocalPlayer()->IsAlive())
-							return;
-						flashlightOn = !flashlightOn;
-						flashlightOnTime = time;
-						Handle<IAudioChunk> chunk =
-						  audioDevice->RegisterSound("Sounds/Player/Flashlight.opus");
-						audioDevice->PlayLocal(chunk.GetPointerOrNull(), AudioParam());
+					} else if (CheckKey(cg_keyHottrack, name) && down) {
+						hottrackVisible = !hottrackVisible;
 					} else if (CheckKey(cg_keyAutoFocus, name) && down && (int)cg_manualFocus) {
 						autoFocusEnabled = true;
 					} else if (down) {
