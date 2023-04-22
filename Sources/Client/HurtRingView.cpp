@@ -81,6 +81,8 @@ namespace spades {
 			}
 
 			playerFront = p->GetFront2D();
+			if (client->GetCameraMode() == ClientCameraMode::ThirdPersonLocal)
+				playerFront = client->GetFront2D();
 
 			float hurtRingSize = renderer.ScreenHeight() * .3f;
 			float cx = renderer.ScreenWidth() * .5f;

@@ -87,6 +87,13 @@ namespace spades {
 			}
 		}
 
+		Vector3 Client::GetFront2D() const {
+			return -MakeVector3(
+				cosf(followAndFreeCameraState.yaw),
+				sinf(followAndFreeCameraState.yaw),
+				0.f);
+		}
+
 		int Client::GetCameraTargetPlayerId() {
 			switch (GetCameraMode()) {
 				case ClientCameraMode::None:

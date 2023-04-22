@@ -261,11 +261,6 @@ namespace spades {
 			void FollowNextPlayer(bool reverse);
 
 			/**
-			 * Retrieves the current camera mode.
-			 */
-			ClientCameraMode GetCameraMode();
-
-			/**
 			 * Retrieves the target player ID of the current camera mode (as returned by
 			 * `GetCameraMode`).
 			 *
@@ -437,6 +432,8 @@ namespace spades {
 			IRenderer &GetRenderer() { return *renderer; }
 			SceneDefinition GetLastSceneDef() { return lastSceneDef; }
 			IAudioDevice &GetAudioDevice() { return *audioDevice; }
+			ClientCameraMode GetCameraMode();
+			Vector3 GetFront2D() const;
 
 			bool WantsToBeClosed() override;
 			bool IsMuted();
