@@ -52,16 +52,16 @@ namespace spades {
 			SPADES_MARK_FUNCTION();
 
 			std::list<Item>::iterator it;
-			std::vector<std::list<Item>::iterator> its;
+			std::vector<std::list<Item>::iterator> itemsToRemove;
 			for (it = items.begin(); it != items.end(); it++) {
 				Item &ent = *it;
 				ent.fade -= dt;
 				if (ent.fade < 0) {
-					its.push_back(it);
+					itemsToRemove.push_back(it);
 				}
 			}
-			for (size_t i = 0; i < its.size(); i++)
-				items.erase(its[i]);
+			for (size_t i = 0; i < itemsToRemove.size(); i++)
+				items.erase(itemsToRemove[i]);
 		}
 
 		void HurtRingView::Draw() {
@@ -75,7 +75,7 @@ namespace spades {
 			}
 
 			auto p = w->GetLocalPlayer();
-			if (!p || !p->IsAlive()) {
+			if (!p) {
 				ClearAll();
 				return;
 			}

@@ -1235,6 +1235,8 @@ namespace spades {
 					if (&p != killer) {
 						GetWorld()->GetPlayerPersistent(killer->GetId()).kills += 1;
 					}
+					if (p.GetId() == GetWorld()->GetLocalPlayerIndex().value())
+						GetWorld()->GetListener()->LocalPlayerHurt(HurtTypeWeapon, true, killer->GetPosition());
 				} break;
 				case PacketTypeChatMessage: {
 					// might be wrong player id for server message

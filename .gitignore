@@ -126,3 +126,4 @@ ipch/
 OpenSpades.rc
 
 CMakeSettings.json
+.vscode/settings.json

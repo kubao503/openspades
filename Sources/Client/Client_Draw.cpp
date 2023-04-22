@@ -454,10 +454,6 @@ namespace spades {
 			float scrHeight = renderer->ScreenHeight();
 			Player &p = GetWorld()->GetLocalPlayer().value();
 
-			// Draw damage rings
-			if (!cg_hideHud)
-				hurtRingView->Draw();
-
 			if (!cg_hideHud) {
 				// Draw ammo amount
 				// (Note: this cannot be displayed for a spectated player --- the server
@@ -818,6 +814,10 @@ namespace spades {
 						DrawDeadPlayerHUD();
 						DrawSpectateHUD();
 					}
+
+					// Draw damage rings
+					if (!cg_hideHud)
+						hurtRingView->Draw();
 				} else {
 					DrawSpectateHUD();
 				}

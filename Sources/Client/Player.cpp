@@ -373,11 +373,9 @@ namespace spades {
 
 		void Player::SetHP(int hp, HurtType type, spades::Vector3 p) {
 			health = hp;
-			if (this == world.GetLocalPlayer()) {
-				if (world.GetListener())
-					world.GetListener()->LocalPlayerHurt(type,
-					                                     p.x != 0.f || p.y != 0.f || p.z != 0.f, p);
-			}
+			bool sourceGiven = p.x != 0.f || p.y != 0.f || p.z != 0.f;
+			if (this == world.GetLocalPlayer() && world.GetListener())
+				world.GetListener()->LocalPlayerHurt(type, sourceGiven, p);
 		}
 
 		void Player::Update(float dt) {
