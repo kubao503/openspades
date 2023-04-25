@@ -765,7 +765,7 @@ namespace spades {
 
 			// in AoS 0.75's way
 			Vector3 o = orientation;
-			float recoilFactor = world.IsThereSpectator() ? 1 : .7f;
+			float recoilFactor = world.IsThereSpectator() ? 1 : .8f;
 			Vector3 rec = weapon->GetRecoil() * recoilFactor;
 			float upLimit = Vector3::Dot(GetFront2D(), o);
 			upLimit -= 0.03f; // ???
@@ -1025,17 +1025,17 @@ namespace spades {
 		void Player::BoxClipMove(float fsynctics) {
 			SPADES_MARK_FUNCTION();
 
-			float f = fsynctics * 32.f;
-			float nextX = f * velocity.x + position.x;
-			float nextY = f * velocity.y + position.y;
+			float horizontalStep = fsynctics * 32.f;
+			float nextX = horizontalStep * velocity.x + position.x;
+			float nextY = horizontalStep * velocity.y + position.y;
 			bool climb = false;
-			float offset, m;
+			float offset, maxClimbStep;
 			if (input.crouch) {
 				offset = .45f;
-				m = .9f;
+				maxClimbStep = .9f;
 			} else {
 				offset = .9f;
-				m = 1.35f;
+				maxClimbStep = 1.35f;
 			}
 
 			float zWithOffset = position.z + offset;
@@ -1046,22 +1046,22 @@ namespace spades {
 			SPAssert(map);
 
 			if (velocity.x < 0.f)
-				f = -0.45f;
+				horizontalStep = -0.45f;
 			else
-				f = 0.45f;
+				horizontalStep = 0.45f;
 
-			z = m;
+			z = maxClimbStep;
 
-			while (z >= -1.36f && !map->ClipBox(nextX + f, position.y - .45f, zWithOffset + z) &&
-			       !map->ClipBox(nextX + f, position.y + .45f, zWithOffset + z))
+			while (z >= -1.36f && !map->ClipBox(nextX + horizontalStep, position.y - .45f, zWithOffset + z) &&
+			       !map->ClipBox(nextX + horizontalStep, position.y + .45f, zWithOffset + z))
 				z -= 0.9f;
 			if (z < -1.36f)
 				position.x = nextX;
 			// else if (!(input.crouch) && orientation.z < 0.5f && !input.sprint) {
 			else if (!(input.crouch) && !input.sprint) {
 				z = 0.35f;
-				while (z >= -2.36f && !map->ClipBox(nextX + f, position.y - .45f, zWithOffset + z) &&
-				       !map->ClipBox(nextX + f, position.y + .45f, zWithOffset + z))
+				while (z >= -2.36f && !map->ClipBox(nextX + horizontalStep, position.y - .45f, zWithOffset + z) &&
+				       !map->ClipBox(nextX + horizontalStep, position.y + .45f, zWithOffset + z))
 					z -= 0.9f;
 				if (z < -2.36f) {
 					position.x = nextX;
@@ -1074,22 +1074,22 @@ namespace spades {
 			}
 
 			if (velocity.y < 0.f)
-				f = -0.45f;
+				horizontalStep = -0.45f;
 			else
-				f = 0.45f;
+				horizontalStep = 0.45f;
 
-			z = m;
+			z = maxClimbStep;
 
-			while (z >= -1.36f && !map->ClipBox(position.x - .45f, nextY + f, zWithOffset + z) &&
-			       !map->ClipBox(position.x + .45f, nextY + f, zWithOffset + z))
+			while (z >= -1.36f && !map->ClipBox(position.x - .45f, nextY + horizontalStep, zWithOffset + z) &&
+			       !map->ClipBox(position.x + .45f, nextY + horizontalStep, zWithOffset + z))
 				z -= 0.9f;
 			if (z < -1.36f)
 				position.y = nextY;
 			//else if (!(input.crouch) && orientation.z < 0.5f && !input.sprint && !climb) {
 			else if (!(input.crouch) && !input.sprint && !climb) {
 				z = 0.35f;
-				while (z >= -2.36f && !map->ClipBox(position.x - .45f, nextY + f, zWithOffset + z) &&
-				       !map->ClipBox(position.x + .45f, nextY + f, zWithOffset + z))
+				while (z >= -2.36f && !map->ClipBox(position.x - .45f, nextY + horizontalStep, zWithOffset + z) &&
+				       !map->ClipBox(position.x + .45f, nextY + horizontalStep, zWithOffset + z))
 					z -= 0.9f;
 				if (z < -2.36f) {
 					position.y = nextY;
@@ -1106,18 +1106,18 @@ namespace spades {
 				velocity.y *= .5f;
 				lastClimbTime = world.GetTime();
 				zWithOffset -= 1.f;
-				m = -1.35f;
+				maxClimbStep = -1.35f;
 			} else {
 				if (velocity.z < 0.f)
-					m = -m;
+					maxClimbStep = -maxClimbStep;
 				zWithOffset += velocity.z * fsynctics * 32.f;
 			}
 
 			airborne = true;
-			if (map->ClipBox(position.x - .45f, position.y - .45f, zWithOffset + m) ||
-			    map->ClipBox(position.x - .45f, position.y + .45f, zWithOffset + m) ||
-			    map->ClipBox(position.x + .45f, position.y - .45f, zWithOffset + m) ||
-			    map->ClipBox(position.x + .45f, position.y + .45f, zWithOffset + m)) {
+			if (map->ClipBox(position.x - .45f, position.y - .45f, zWithOffset + maxClimbStep) ||
+			    map->ClipBox(position.x - .45f, position.y + .45f, zWithOffset + maxClimbStep) ||
+			    map->ClipBox(position.x + .45f, position.y - .45f, zWithOffset + maxClimbStep) ||
+			    map->ClipBox(position.x + .45f, position.y + .45f, zWithOffset + maxClimbStep)) {
 				if (velocity.z >= 0.f) {
 					wade = position.z > 61.f;
 					airborne = false;
