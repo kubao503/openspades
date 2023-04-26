@@ -25,6 +25,7 @@
 
 #include "PhysicsConstants.h"
 #include <Core/Math.h>
+#include "BlocksUnderneath.h"
 
 namespace spades {
 	namespace client {
@@ -125,6 +126,8 @@ namespace spades {
 			bool reloadingServerSide;
 
 			float respawnTime;
+
+			BlocksUnderneath blocksUnderneath;
 
 			void RepositionPlayer(const Vector3 &);
 			void MovePlayer(float fsynctics);

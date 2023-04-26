@@ -38,7 +38,7 @@ namespace spades {
 
 		Player::Player(World &w, int playerId, WeaponType wType, int teamId, Vector3 position,
 		               IntVector3 color)
-		    : world(w) {
+		    : world(w), blocksUnderneath(w) {
 			SPADES_MARK_FUNCTION();
 
 			lastClimbTime = -100;
@@ -1115,22 +1115,12 @@ namespace spades {
 
 			airborne = true;
 
-			std::array<bool, 4> isStandingOn;
-			isStandingOn[0] =
-			  map->ClipBox(position.x - .45f, position.y - .45f, zWithOffset + maxClimbStep);
-			isStandingOn[1] =
-			  map->ClipBox(position.x - .45f, position.y + .45f, zWithOffset + maxClimbStep);
-			isStandingOn[2] =
-			  map->ClipBox(position.x + .45f, position.y - .45f, zWithOffset + maxClimbStep);
-			isStandingOn[3] =
-			  map->ClipBox(position.x + .45f, position.y + .45f, zWithOffset + maxClimbStep);
+			blocksUnderneath.Update({position.x, position.y, zWithOffset + maxClimbStep});
 
 			if (world.GetLocalPlayer() == this)
-				SPLog("%d %d %d %d", isStandingOn.at(0), isStandingOn.at(1), isStandingOn.at(2),
-			      isStandingOn.at(3));
+				blocksUnderneath.PrintInfo();
 
-			if (std::any_of(isStandingOn.begin(), isStandingOn.end(),
-				[](bool x) { return x; })) {
+			if (blocksUnderneath.IsStandingOnAny()) {
 				if (velocity.z >= 0.f) {
 					wade = position.z > 61.f;
 					airborne = false;
