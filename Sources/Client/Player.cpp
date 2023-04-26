@@ -1117,8 +1117,8 @@ namespace spades {
 
 			blocksUnderneath.Update({position.x, position.y, zWithOffset + maxClimbStep});
 
-			if (world.GetLocalPlayer() == this)
-				blocksUnderneath.PrintInfo();
+			//if (world.GetLocalPlayer() == this)
+			//	blocksUnderneath.PrintInfo();
 
 			if (blocksUnderneath.IsStandingOnAny()) {
 				if (velocity.z >= 0.f) {
@@ -1128,6 +1128,12 @@ namespace spades {
 				velocity.z = 0.f;
 			} else {
 				position.z = zWithOffset - offset;
+			}
+
+			if (input.crouch && world.GetLocalPlayer() == this &&
+			    blocksUnderneath.IsInDangerOfFalling()) {
+				velocity.x = 0.f;
+				velocity.y = 0.f;
 			}
 
 			RepositionPlayer(position);

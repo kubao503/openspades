@@ -7,11 +7,13 @@ using namespace spades::client;
 
 void BlocksUnderneath::Block::Update(const GameMap &map, const Vector3 &blockPosition) {
 	isStanding = map.ClipBox(blockPosition.x, blockPosition.y, blockPosition.z);
-	position.x = (int)floorf(blockPosition.x);
-	position.y = (int)floorf(blockPosition.y);
+	position.x = static_cast<int>(floor(blockPosition.x));
+	position.y = static_cast<int>(floor(blockPosition.y));
 }
 
 void BlocksUnderneath::Update(const Vector3 &position) {
+	playerPosition = position;
+
 	const Handle<GameMap> &map = world.GetMap();
 	blocksUnderneath.at(0).Update(*map, {position.x - .45f, position.y - .45f, position.z});
 	blocksUnderneath.at(1).Update(*map, {position.x - .45f, position.y + .45f, position.z});
@@ -25,6 +27,23 @@ bool BlocksUnderneath::IsStandingOnAny() const {
 }
 
 void BlocksUnderneath::PrintInfo() const {
-	SPLog("%d %d %d %d", blocksUnderneath.at(0).isStanding, blocksUnderneath.at(1).isStanding,
-	      blocksUnderneath.at(2).isStanding, blocksUnderneath.at(3).isStanding);
+	for (const auto &b : blocksUnderneath) {
+		if (b.isStanding) {
+			SPLog("%d %d", b.position.x, b.position.y);
+		}
+	}
+	SPLog("=====");
+}
+
+bool BlocksUnderneath::IsInDangerOfFalling() {
+	for (const auto &b : blocksUnderneath) {
+		if (b.isStanding) {
+			float xDiff = abs(b.position.x + .5f - playerPosition.x);
+			float yDiff = abs(b.position.y + .5f - playerPosition.y);
+			bool inDanger = xDiff > dangerDistance || yDiff > dangerDistance;
+			if (inDanger)
+				return true;
+		}
+	}
+	return false;
 }

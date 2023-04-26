@@ -8,8 +8,12 @@ namespace spades {
 		class GameMap;
 		class World;
 
+		constexpr float dangerDistance{0.88f};
+
 		class BlocksUnderneath {
 			World &world;
+			bool isInDangerOfFalling{false};
+			Vector3 playerPosition{};
 
 			struct Block {
 				IntVector3 position;
@@ -23,6 +27,7 @@ namespace spades {
 			void Update(const Vector3 &position);
 			bool IsStandingOnAny() const;
 			void PrintInfo() const;
+			bool IsInDangerOfFalling();
 		};
 	} // namespace client
 } // namespace spades
