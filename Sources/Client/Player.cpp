@@ -1114,10 +1114,23 @@ namespace spades {
 			}
 
 			airborne = true;
-			if (map->ClipBox(position.x - .45f, position.y - .45f, zWithOffset + maxClimbStep) ||
-			    map->ClipBox(position.x - .45f, position.y + .45f, zWithOffset + maxClimbStep) ||
-			    map->ClipBox(position.x + .45f, position.y - .45f, zWithOffset + maxClimbStep) ||
-			    map->ClipBox(position.x + .45f, position.y + .45f, zWithOffset + maxClimbStep)) {
+
+			std::array<bool, 4> isStandingOn;
+			isStandingOn[0] =
+			  map->ClipBox(position.x - .45f, position.y - .45f, zWithOffset + maxClimbStep);
+			isStandingOn[1] =
+			  map->ClipBox(position.x - .45f, position.y + .45f, zWithOffset + maxClimbStep);
+			isStandingOn[2] =
+			  map->ClipBox(position.x + .45f, position.y - .45f, zWithOffset + maxClimbStep);
+			isStandingOn[3] =
+			  map->ClipBox(position.x + .45f, position.y + .45f, zWithOffset + maxClimbStep);
+
+			if (world.GetLocalPlayer() == this)
+				SPLog("%d %d %d %d", isStandingOn.at(0), isStandingOn.at(1), isStandingOn.at(2),
+			      isStandingOn.at(3));
+
+			if (std::any_of(isStandingOn.begin(), isStandingOn.end(),
+				[](bool x) { return x; })) {
 				if (velocity.z >= 0.f) {
 					wade = position.z > 61.f;
 					airborne = false;
