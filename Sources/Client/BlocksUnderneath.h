@@ -19,6 +19,7 @@ namespace spades {
 				IntVector3 position;
 				bool isStanding;
 				void Update(const GameMap &map, const Vector3 &blockPosition);
+				bool IsInDangerOfFalling(const Vector3 &playerPosition) const;
 			};
 			std::array<Block, 4> blocksUnderneath = {};
 
@@ -27,7 +28,7 @@ namespace spades {
 			void Update(const Vector3 &position);
 			bool IsStandingOnAny() const;
 			void PrintInfo() const;
-			bool IsInDangerOfFalling();
+			bool IsInDangerOfFalling() const;
 		};
 	} // namespace client
 } // namespace spades

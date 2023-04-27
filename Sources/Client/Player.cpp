@@ -21,6 +21,7 @@
 
 #include "Player.h"
 
+#include "BlocksUnderneath.h"
 #include "GameMap.h"
 #include "GameMapWrapper.h"
 #include "Grenade.h"
@@ -38,7 +39,7 @@ namespace spades {
 
 		Player::Player(World &w, int playerId, WeaponType wType, int teamId, Vector3 position,
 		               IntVector3 color)
-		    : world(w), blocksUnderneath(w) {
+		    : world(w), blocksUnderneath{std::make_unique<BlocksUnderneath>(w)} {
 			SPADES_MARK_FUNCTION();
 
 			lastClimbTime = -100;
@@ -782,7 +783,8 @@ namespace spades {
 			float horzModifier = 1;
 			float vertModifier = 1;
 
-			if ((input.moveLeft || input.moveRight || input.moveForward || input.moveBackward) && !weapInput.secondary) {
+			if ((input.moveLeft || input.moveRight || input.moveForward || input.moveBackward) &&
+			    !weapInput.secondary) {
 				horzModifier *= 2;
 				vertModifier *= 2;
 			}
@@ -790,8 +792,7 @@ namespace spades {
 			if (airborne) {
 				horzModifier *= 2;
 				vertModifier *= 2;
-			}
-			else if (input.crouch) {
+			} else if (input.crouch) {
 				horzModifier /= 2;
 				vertModifier /= 2;
 			}
@@ -1052,7 +1053,8 @@ namespace spades {
 
 			z = maxClimbStep;
 
-			while (z >= -1.36f && !map->ClipBox(nextX + horizontalStep, position.y - .45f, zWithOffset + z) &&
+			while (z >= -1.36f &&
+			       !map->ClipBox(nextX + horizontalStep, position.y - .45f, zWithOffset + z) &&
 			       !map->ClipBox(nextX + horizontalStep, position.y + .45f, zWithOffset + z))
 				z -= 0.9f;
 			if (z < -1.36f)
@@ -1060,7 +1062,8 @@ namespace spades {
 			// else if (!(input.crouch) && orientation.z < 0.5f && !input.sprint) {
 			else if (!(input.crouch) && !input.sprint) {
 				z = 0.35f;
-				while (z >= -2.36f && !map->ClipBox(nextX + horizontalStep, position.y - .45f, zWithOffset + z) &&
+				while (z >= -2.36f &&
+				       !map->ClipBox(nextX + horizontalStep, position.y - .45f, zWithOffset + z) &&
 				       !map->ClipBox(nextX + horizontalStep, position.y + .45f, zWithOffset + z))
 					z -= 0.9f;
 				if (z < -2.36f) {
@@ -1080,15 +1083,17 @@ namespace spades {
 
 			z = maxClimbStep;
 
-			while (z >= -1.36f && !map->ClipBox(position.x - .45f, nextY + horizontalStep, zWithOffset + z) &&
+			while (z >= -1.36f &&
+			       !map->ClipBox(position.x - .45f, nextY + horizontalStep, zWithOffset + z) &&
 			       !map->ClipBox(position.x + .45f, nextY + horizontalStep, zWithOffset + z))
 				z -= 0.9f;
 			if (z < -1.36f)
 				position.y = nextY;
-			//else if (!(input.crouch) && orientation.z < 0.5f && !input.sprint && !climb) {
+			// else if (!(input.crouch) && orientation.z < 0.5f && !input.sprint && !climb) {
 			else if (!(input.crouch) && !input.sprint && !climb) {
 				z = 0.35f;
-				while (z >= -2.36f && !map->ClipBox(position.x - .45f, nextY + horizontalStep, zWithOffset + z) &&
+				while (z >= -2.36f &&
+				       !map->ClipBox(position.x - .45f, nextY + horizontalStep, zWithOffset + z) &&
 				       !map->ClipBox(position.x + .45f, nextY + horizontalStep, zWithOffset + z))
 					z -= 0.9f;
 				if (z < -2.36f) {
@@ -1115,12 +1120,12 @@ namespace spades {
 
 			airborne = true;
 
-			blocksUnderneath.Update({position.x, position.y, zWithOffset + maxClimbStep});
+			blocksUnderneath->Update({position.x, position.y, zWithOffset + maxClimbStep});
 
-			//if (world.GetLocalPlayer() == this)
+			// if (world.GetLocalPlayer() == this)
 			//	blocksUnderneath.PrintInfo();
 
-			if (blocksUnderneath.IsStandingOnAny()) {
+			if (blocksUnderneath->IsStandingOnAny()) {
 				if (velocity.z >= 0.f) {
 					wade = position.z > 61.f;
 					airborne = false;
@@ -1131,7 +1136,7 @@ namespace spades {
 			}
 
 			if (input.crouch && world.GetLocalPlayer() == this &&
-			    blocksUnderneath.IsInDangerOfFalling()) {
+			    blocksUnderneath->IsInDangerOfFalling()) {
 				velocity.x = 0.f;
 				velocity.y = 0.f;
 			}
@@ -1276,7 +1281,7 @@ namespace spades {
 			                  map->ClipBox(x1, y2, z1) || map->ClipBox(x2, y2, z1))) {
 				return true;
 			} else if (!(map->ClipBox(x1, y1, z2) || map->ClipBox(x2, y1, z2) ||
-			           map->ClipBox(x1, y2, z2) || map->ClipBox(x2, y2, z2))) {
+			             map->ClipBox(x1, y2, z2) || map->ClipBox(x2, y2, z2))) {
 				position.z -= 0.9f;
 				eye.z -= 0.9f;
 				return true;

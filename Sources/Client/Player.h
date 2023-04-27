@@ -25,12 +25,12 @@
 
 #include "PhysicsConstants.h"
 #include <Core/Math.h>
-#include "BlocksUnderneath.h"
 
 namespace spades {
 	namespace client {
 		class World;
 		class Weapon;
+		class BlocksUnderneath;
 
 		struct PlayerInput {
 			bool moveForward : 1;
@@ -127,7 +127,7 @@ namespace spades {
 
 			float respawnTime;
 
-			BlocksUnderneath blocksUnderneath;
+			std::unique_ptr<BlocksUnderneath> blocksUnderneath;
 
 			void RepositionPlayer(const Vector3 &);
 			void MovePlayer(float fsynctics);

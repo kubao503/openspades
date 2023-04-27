@@ -11,6 +11,12 @@ void BlocksUnderneath::Block::Update(const GameMap &map, const Vector3 &blockPos
 	position.y = static_cast<int>(floor(blockPosition.y));
 }
 
+bool BlocksUnderneath::Block::IsInDangerOfFalling(const Vector3 &playerPosition) const {
+	float xDiff = abs(position.x + .5f - playerPosition.x);
+	float yDiff = abs(position.y + .5f - playerPosition.y);
+	return xDiff > dangerDistance || yDiff > dangerDistance;
+}
+
 void BlocksUnderneath::Update(const Vector3 &position) {
 	playerPosition = position;
 
@@ -35,15 +41,9 @@ void BlocksUnderneath::PrintInfo() const {
 	SPLog("=====");
 }
 
-bool BlocksUnderneath::IsInDangerOfFalling() {
-	for (const auto &b : blocksUnderneath) {
-		if (b.isStanding) {
-			float xDiff = abs(b.position.x + .5f - playerPosition.x);
-			float yDiff = abs(b.position.y + .5f - playerPosition.y);
-			bool inDanger = xDiff > dangerDistance || yDiff > dangerDistance;
-			if (inDanger)
-				return true;
-		}
-	}
-	return false;
+bool BlocksUnderneath::IsInDangerOfFalling() const {
+	return std::all_of(blocksUnderneath.begin(), blocksUnderneath.end(),
+	                   [&pos = playerPosition](const Block &b) {
+		                   return !b.isStanding || b.IsInDangerOfFalling(pos);
+	                   });
 }
