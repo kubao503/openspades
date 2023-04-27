@@ -1060,11 +1060,13 @@ namespace spades {
 			       !map->ClipBox(nextX + horizontalStep, position.y + .45f, feetZ + climbStep))
 				climbStep -= 0.9f;
 
-			if (climbStep < -1.36f &&
-			    !IsInDangerOfFalling({nextX, position.y, 0}, fsynctics, feetZ, maxClimbStep))
+			if (climbStep < -1.36f) {
 				// No wall ahead?
-				position.x = nextX;
-			else if (!(input.crouch) && !input.sprint) {
+				if (!IsInDangerOfFalling({nextX, position.y, 0}, fsynctics, feetZ, maxClimbStep))
+					position.x = nextX;
+				else
+					velocity.x = 0.f;
+			} else if (!input.crouch && !input.sprint) {
 				// Try to climb wall
 				climbStep = 0.35f;
 				while (
@@ -1072,17 +1074,15 @@ namespace spades {
 				  !map->ClipBox(nextX + horizontalStep, position.y - .45f, feetZ + climbStep) &&
 				  !map->ClipBox(nextX + horizontalStep, position.y + .45f, feetZ + climbStep))
 					climbStep -= 0.9f;
-				if (climbStep < -2.36f &&
-				    !IsInDangerOfFalling({nextX, position.y, 0}, fsynctics, feetZ, maxClimbStep, true)) {
+				if (climbStep < -2.36f && !IsInDangerOfFalling({nextX, position.y, 0}, fsynctics,
+				                                               feetZ, maxClimbStep, true)) {
 					// Able to climb?
 					position.x = nextX;
 					climb = true;
 				} else {
-					// Stop on wall
 					velocity.x = 0.f;
 				}
 			} else {
-				// Stop on wall
 				velocity.x = 0.f;
 			}
 
@@ -1099,18 +1099,20 @@ namespace spades {
 			       !map->ClipBox(position.x + .45f, nextY + horizontalStep, feetZ + climbStep))
 				climbStep -= 0.9f;
 
-			if (climbStep < -1.36f &&
-			    !IsInDangerOfFalling({position.x, nextY, 0}, fsynctics, feetZ, maxClimbStep))
-				position.y = nextY;
-			else if (!(input.crouch) && !input.sprint && !climb) {
+			if (climbStep < -1.36f) {
+				if (!IsInDangerOfFalling({position.x, nextY, 0}, fsynctics, feetZ, maxClimbStep))
+					position.y = nextY;
+				else
+					velocity.y = 0.f;
+			} else if (!(input.crouch) && !input.sprint && !climb) {
 				climbStep = 0.35f;
 				while (
 				  climbStep >= -2.36f &&
 				  !map->ClipBox(position.x - .45f, nextY + horizontalStep, feetZ + climbStep) &&
 				  !map->ClipBox(position.x + .45f, nextY + horizontalStep, feetZ + climbStep))
 					climbStep -= 0.9f;
-				if (climbStep < -2.36f &&
-				    !IsInDangerOfFalling({position.x, nextY, 0}, fsynctics, feetZ, maxClimbStep, true)) {
+				if (climbStep < -2.36f && !IsInDangerOfFalling({position.x, nextY, 0}, fsynctics,
+				                                               feetZ, maxClimbStep, true)) {
 					position.y = nextY;
 					climb = true;
 				} else {
