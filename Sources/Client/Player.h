@@ -132,6 +132,7 @@ namespace spades {
 			void SmoothEyeTransition();
 			void MovePlayer(float fsynctics);
 			void BoxClipMove(float fsynctics);
+			bool IsInDangerOfFalling(const Vector3 &, float, float, float, bool = false) const;
 			bool TryUncrouch();
 
 			void UseSpade();

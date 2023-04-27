@@ -8,8 +8,6 @@ namespace spades {
 		class GameMap;
 		class World;
 
-		constexpr float dangerDistance{0.88f};
-
 		class BlocksUnderneath {
 			World &world;
 			bool isInDangerOfFalling{false};
@@ -19,7 +17,6 @@ namespace spades {
 				IntVector3 position;
 				bool isStanding;
 				void Update(const GameMap &map, const Vector3 &blockPosition);
-				bool IsInDangerOfFalling(const Vector3 &playerPosition) const;
 			};
 			std::array<Block, 4> blocksUnderneath = {};
 
@@ -27,7 +24,6 @@ namespace spades {
 			BlocksUnderneath(World &w) : world{w} {}
 			void Update(const Vector3 &position);
 			bool IsStandingOnAny() const;
-			void PrintInfo() const;
 			bool IsInDangerOfFalling() const;
 		};
 	} // namespace client

@@ -1046,6 +1046,7 @@ namespace spades {
 
 			SPAssert(map);
 
+			// X-axis movement
 			if (velocity.x < 0.f)
 				horizontalStep = -0.45f;
 			else
@@ -1059,17 +1060,20 @@ namespace spades {
 			       !map->ClipBox(nextX + horizontalStep, position.y + .45f, feetZ + climbStep))
 				climbStep -= 0.9f;
 
-			if (climbStep < -1.36f)
+			if (climbStep < -1.36f &&
+			    !IsInDangerOfFalling({nextX, position.y, 0}, fsynctics, feetZ, maxClimbStep))
 				// No wall ahead?
 				position.x = nextX;
 			else if (!(input.crouch) && !input.sprint) {
 				// Try to climb wall
 				climbStep = 0.35f;
-				while (climbStep >= -2.36f &&
-				       !map->ClipBox(nextX + horizontalStep, position.y - .45f, feetZ + climbStep) &&
-				       !map->ClipBox(nextX + horizontalStep, position.y + .45f, feetZ + climbStep))
+				while (
+				  climbStep >= -2.36f &&
+				  !map->ClipBox(nextX + horizontalStep, position.y - .45f, feetZ + climbStep) &&
+				  !map->ClipBox(nextX + horizontalStep, position.y + .45f, feetZ + climbStep))
 					climbStep -= 0.9f;
-				if (climbStep < -2.36f) {
+				if (climbStep < -2.36f &&
+				    !IsInDangerOfFalling({nextX, position.y, 0}, fsynctics, feetZ, maxClimbStep, true)) {
 					// Able to climb?
 					position.x = nextX;
 					climb = true;
@@ -1079,9 +1083,10 @@ namespace spades {
 				}
 			} else {
 				// Stop on wall
-				velocity.x = 0.f;	
+				velocity.x = 0.f;
 			}
 
+			// Y-axis movement
 			if (velocity.y < 0.f)
 				horizontalStep = -0.45f;
 			else
@@ -1094,15 +1099,18 @@ namespace spades {
 			       !map->ClipBox(position.x + .45f, nextY + horizontalStep, feetZ + climbStep))
 				climbStep -= 0.9f;
 
-			if (climbStep < -1.36f)
+			if (climbStep < -1.36f &&
+			    !IsInDangerOfFalling({position.x, nextY, 0}, fsynctics, feetZ, maxClimbStep))
 				position.y = nextY;
 			else if (!(input.crouch) && !input.sprint && !climb) {
 				climbStep = 0.35f;
-				while (climbStep >= -2.36f &&
-				       !map->ClipBox(position.x - .45f, nextY + horizontalStep, feetZ + climbStep) &&
-				       !map->ClipBox(position.x + .45f, nextY + horizontalStep, feetZ + climbStep))
+				while (
+				  climbStep >= -2.36f &&
+				  !map->ClipBox(position.x - .45f, nextY + horizontalStep, feetZ + climbStep) &&
+				  !map->ClipBox(position.x + .45f, nextY + horizontalStep, feetZ + climbStep))
 					climbStep -= 0.9f;
-				if (climbStep < -2.36f) {
+				if (climbStep < -2.36f &&
+				    !IsInDangerOfFalling({position.x, nextY, 0}, fsynctics, feetZ, maxClimbStep, true)) {
 					position.y = nextY;
 					climb = true;
 				} else {
@@ -1124,11 +1132,10 @@ namespace spades {
 				feetZ += velocity.z * fsynctics * 32.f;
 			}
 
-			airborne = true;
-
 			blocksUnderneath->Update({position.x, position.y, feetZ + maxClimbStep});
 
 			// Landing on block(s)
+			airborne = true;
 			if (blocksUnderneath->IsStandingOnAny()) {
 				if (velocity.z >= 0.f) {
 					wade = position.z > 61.f;
@@ -1139,13 +1146,25 @@ namespace spades {
 				position.z = feetZ - distanceToFeet;
 			}
 
-			if (input.crouch && world.GetLocalPlayer() == this &&
-			    blocksUnderneath->IsInDangerOfFalling()) {
-				velocity.x = 0.f;
-				velocity.y = 0.f;
+			SmoothEyeTransition();
+		}
+
+		bool Player::IsInDangerOfFalling(const Vector3 &newPosition, float fsynctics, float feetZ,
+		                                 float maxClimbStep, bool climb) const {
+			if (!input.crouch || world.GetLocalPlayer() != this)
+				return false;
+
+			if (climb) {
+				feetZ -= 1.f;
+				maxClimbStep = -1.35f;
+			} else {
+				if (velocity.z < 0.f)
+					maxClimbStep = -maxClimbStep;
+				feetZ += velocity.z * fsynctics * 32.f;
 			}
 
-			SmoothEyeTransition();
+			blocksUnderneath->Update({newPosition.x, newPosition.y, feetZ + maxClimbStep});
+			return blocksUnderneath->IsInDangerOfFalling();
 		}
 
 		bool Player::IsOnGroundOrWade() {
