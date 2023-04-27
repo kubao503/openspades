@@ -129,7 +129,7 @@ namespace spades {
 
 			std::unique_ptr<BlocksUnderneath> blocksUnderneath;
 
-			void RepositionPlayer(const Vector3 &);
+			void SmoothEyeTransition();
 			void MovePlayer(float fsynctics);
 			void BoxClipMove(float fsynctics);
 			bool TryUncrouch();

@@ -1030,18 +1030,18 @@ namespace spades {
 			float nextX = horizontalStep * velocity.x + position.x;
 			float nextY = horizontalStep * velocity.y + position.y;
 			bool climb = false;
-			float offset, maxClimbStep;
+			float distanceToFeet, maxClimbStep;
 			if (input.crouch) {
-				offset = .45f;
+				distanceToFeet = .45f;
 				maxClimbStep = .9f;
 			} else {
-				offset = .9f;
+				distanceToFeet = .9f;
 				maxClimbStep = 1.35f;
 			}
 
-			float zWithOffset = position.z + offset;
+			float feetZ = position.z + distanceToFeet;
 
-			float z;
+			float climbStep;
 			const Handle<GameMap> &map = world.GetMap();
 
 			SPAssert(map);
@@ -1051,29 +1051,35 @@ namespace spades {
 			else
 				horizontalStep = 0.45f;
 
-			z = maxClimbStep;
+			climbStep = maxClimbStep;
 
-			while (z >= -1.36f &&
-			       !map->ClipBox(nextX + horizontalStep, position.y - .45f, zWithOffset + z) &&
-			       !map->ClipBox(nextX + horizontalStep, position.y + .45f, zWithOffset + z))
-				z -= 0.9f;
-			if (z < -1.36f)
+			// Check for wall ahead
+			while (climbStep >= -1.36f &&
+			       !map->ClipBox(nextX + horizontalStep, position.y - .45f, feetZ + climbStep) &&
+			       !map->ClipBox(nextX + horizontalStep, position.y + .45f, feetZ + climbStep))
+				climbStep -= 0.9f;
+
+			if (climbStep < -1.36f)
+				// No wall ahead?
 				position.x = nextX;
-			// else if (!(input.crouch) && orientation.z < 0.5f && !input.sprint) {
 			else if (!(input.crouch) && !input.sprint) {
-				z = 0.35f;
-				while (z >= -2.36f &&
-				       !map->ClipBox(nextX + horizontalStep, position.y - .45f, zWithOffset + z) &&
-				       !map->ClipBox(nextX + horizontalStep, position.y + .45f, zWithOffset + z))
-					z -= 0.9f;
-				if (z < -2.36f) {
+				// Try to climb wall
+				climbStep = 0.35f;
+				while (climbStep >= -2.36f &&
+				       !map->ClipBox(nextX + horizontalStep, position.y - .45f, feetZ + climbStep) &&
+				       !map->ClipBox(nextX + horizontalStep, position.y + .45f, feetZ + climbStep))
+					climbStep -= 0.9f;
+				if (climbStep < -2.36f) {
+					// Able to climb?
 					position.x = nextX;
 					climb = true;
 				} else {
+					// Stop on wall
 					velocity.x = 0.f;
 				}
 			} else {
-				velocity.x = 0.f;
+				// Stop on wall
+				velocity.x = 0.f;	
 			}
 
 			if (velocity.y < 0.f)
@@ -1081,22 +1087,22 @@ namespace spades {
 			else
 				horizontalStep = 0.45f;
 
-			z = maxClimbStep;
+			climbStep = maxClimbStep;
 
-			while (z >= -1.36f &&
-			       !map->ClipBox(position.x - .45f, nextY + horizontalStep, zWithOffset + z) &&
-			       !map->ClipBox(position.x + .45f, nextY + horizontalStep, zWithOffset + z))
-				z -= 0.9f;
-			if (z < -1.36f)
+			while (climbStep >= -1.36f &&
+			       !map->ClipBox(position.x - .45f, nextY + horizontalStep, feetZ + climbStep) &&
+			       !map->ClipBox(position.x + .45f, nextY + horizontalStep, feetZ + climbStep))
+				climbStep -= 0.9f;
+
+			if (climbStep < -1.36f)
 				position.y = nextY;
-			// else if (!(input.crouch) && orientation.z < 0.5f && !input.sprint && !climb) {
 			else if (!(input.crouch) && !input.sprint && !climb) {
-				z = 0.35f;
-				while (z >= -2.36f &&
-				       !map->ClipBox(position.x - .45f, nextY + horizontalStep, zWithOffset + z) &&
-				       !map->ClipBox(position.x + .45f, nextY + horizontalStep, zWithOffset + z))
-					z -= 0.9f;
-				if (z < -2.36f) {
+				climbStep = 0.35f;
+				while (climbStep >= -2.36f &&
+				       !map->ClipBox(position.x - .45f, nextY + horizontalStep, feetZ + climbStep) &&
+				       !map->ClipBox(position.x + .45f, nextY + horizontalStep, feetZ + climbStep))
+					climbStep -= 0.9f;
+				if (climbStep < -2.36f) {
 					position.y = nextY;
 					climb = true;
 				} else {
@@ -1110,21 +1116,19 @@ namespace spades {
 				velocity.x *= .5f;
 				velocity.y *= .5f;
 				lastClimbTime = world.GetTime();
-				zWithOffset -= 1.f;
+				feetZ -= 1.f;
 				maxClimbStep = -1.35f;
 			} else {
 				if (velocity.z < 0.f)
 					maxClimbStep = -maxClimbStep;
-				zWithOffset += velocity.z * fsynctics * 32.f;
+				feetZ += velocity.z * fsynctics * 32.f;
 			}
 
 			airborne = true;
 
-			blocksUnderneath->Update({position.x, position.y, zWithOffset + maxClimbStep});
+			blocksUnderneath->Update({position.x, position.y, feetZ + maxClimbStep});
 
-			// if (world.GetLocalPlayer() == this)
-			//	blocksUnderneath.PrintInfo();
-
+			// Landing on block(s)
 			if (blocksUnderneath->IsStandingOnAny()) {
 				if (velocity.z >= 0.f) {
 					wade = position.z > 61.f;
@@ -1132,7 +1136,7 @@ namespace spades {
 				}
 				velocity.z = 0.f;
 			} else {
-				position.z = zWithOffset - offset;
+				position.z = feetZ - distanceToFeet;
 			}
 
 			if (input.crouch && world.GetLocalPlayer() == this &&
@@ -1141,7 +1145,7 @@ namespace spades {
 				velocity.y = 0.f;
 			}
 
-			RepositionPlayer(position);
+			SmoothEyeTransition();
 		}
 
 		bool Player::IsOnGroundOrWade() {
@@ -1289,10 +1293,10 @@ namespace spades {
 			return false;
 		}
 
-		void Player::RepositionPlayer(const spades::Vector3 &pos2) {
+		void Player::SmoothEyeTransition() {
 			SPADES_MARK_FUNCTION();
 
-			eye = position = pos2;
+			eye = position;
 			float f = lastClimbTime - world.GetTime();
 			if (f > -.25f)
 				eye.z += (f + .25f) / .25f;
