@@ -1151,11 +1151,10 @@ namespace spades {
 			}
 
 			this->fallPrevented = fallPreventedTmp;
-			blocksUnderneath->Update({position.x, position.y, feetZ + maxClimbStep});
 
 			// Landing on block(s)
 			airborne = true;
-			if (blocksUnderneath->IsStandingOnAny()) {
+			if (blocksUnderneath->IsStandingOnAny({position.x, position.y, feetZ + maxClimbStep})) {
 				if (velocity.z >= 0.f) {
 					wade = position.z > 61.f;
 					airborne = false;
@@ -1194,8 +1193,8 @@ namespace spades {
 				feetZ += velocity.z * fsynctics * 32.f;
 			}
 
-			blocksUnderneath->Update({newPosition.x, newPosition.y, feetZ + maxClimbStep});
-			return blocksUnderneath->IsInDangerOfFalling();
+			return blocksUnderneath->IsInDangerOfFalling(
+			  {newPosition.x, newPosition.y, feetZ + maxClimbStep});
 		}
 
 		bool Player::IsOnGroundOrWade() {

@@ -10,21 +10,15 @@ namespace spades {
 
 		class BlocksUnderneath {
 			World &world;
-			bool isInDangerOfFalling{false};
-			Vector3 playerPosition{};
+			std::array<bool, 4> blocksUnderneath = {};
 
-			struct Block {
-				IntVector3 position;
-				bool isStanding;
-				void Update(const GameMap &map, const Vector3 &blockPosition);
-			};
-			std::array<Block, 4> blocksUnderneath = {};
+			bool BlockUpdate(const GameMap &map, const Vector3 &blockPosition);
+			void Update(const Vector3 &position);
 
 		public:
 			BlocksUnderneath(World &w) : world{w} {}
-			void Update(const Vector3 &position);
-			bool IsStandingOnAny() const;
-			bool IsInDangerOfFalling() const;
+			bool IsStandingOnAny(const Vector3 &playerPosition);
+			bool IsInDangerOfFalling(const Vector3 &playerPosition);
 		};
 	} // namespace client
 } // namespace spades
