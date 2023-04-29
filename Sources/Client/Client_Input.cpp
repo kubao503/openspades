@@ -421,6 +421,7 @@ namespace spades {
 							playerInput.moveForward = keypadInput.forward;
 					} else if (CheckKey(cg_keyCrouch, name)) {
 						playerInput.crouch = down;
+						playerInput.fallPrevention = down;
 					} else if (CheckKey(cg_keySprint, name)) {
 						playerInput.sprint = down;
 					} else if (CheckKey(cg_keySneak, name)) {

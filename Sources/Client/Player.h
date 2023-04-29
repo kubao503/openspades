@@ -41,6 +41,7 @@ namespace spades {
 			bool crouch : 1;
 			bool sneak : 1;
 			bool sprint : 1;
+			bool fallPrevention : 1;
 
 			PlayerInput()
 			    : moveForward(false),
@@ -50,7 +51,8 @@ namespace spades {
 			      jump(false),
 			      crouch(false),
 			      sneak(false),
-			      sprint(false) {}
+			      sprint(false),
+			      fallPrevention(false) {}
 		};
 
 		struct WeaponInput {

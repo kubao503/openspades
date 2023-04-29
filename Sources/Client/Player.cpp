@@ -1182,7 +1182,7 @@ namespace spades {
 
 		bool Player::IsInDangerOfFalling(const Vector3 &newPosition, float fsynctics, float feetZ,
 		                                 float maxClimbStep, bool climb) const {
-			if (!input.crouch || world.GetLocalPlayer() != this)
+			if (!input.fallPrevention || world.GetLocalPlayer() != this)
 				return false;
 
 			if (climb) {
