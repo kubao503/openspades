@@ -85,6 +85,8 @@ namespace spades {
 			holdingGrenade = false;
 			reloadingServerSide = false;
 			canPending = false;
+
+			fallPrevented = false;
 		}
 
 		Player::~Player() { SPADES_MARK_FUNCTION(); }
@@ -1026,9 +1028,13 @@ namespace spades {
 		void Player::BoxClipMove(float fsynctics) {
 			SPADES_MARK_FUNCTION();
 
+			bool fallPreventedTmp = false;
 			float horizontalStep = fsynctics * 32.f;
 			float nextX = horizontalStep * velocity.x + position.x;
 			float nextY = horizontalStep * velocity.y + position.y;
+
+			horizontalSteps_t longSteps = GetLongHorizontalSteps(horizontalStep);
+
 			bool climb = false;
 			float distanceToFeet, maxClimbStep;
 			if (input.crouch) {
@@ -1062,10 +1068,13 @@ namespace spades {
 
 			if (climbStep < -1.36f) {
 				// No wall ahead?
-				if (!IsInDangerOfFalling({nextX, position.y, 0}, fsynctics, feetZ, maxClimbStep))
+				if (!IsInDangerOfFalling({longSteps.first, position.y, 0}, fsynctics, feetZ,
+				                         maxClimbStep))
 					position.x = nextX;
-				else
+				else {
 					velocity.x = 0.f;
+					fallPreventedTmp = true;
+				}
 			} else if (!input.crouch && !input.sprint) {
 				// Try to climb wall
 				climbStep = 0.35f;
@@ -1074,13 +1083,15 @@ namespace spades {
 				  !map->ClipBox(nextX + horizontalStep, position.y - .45f, feetZ + climbStep) &&
 				  !map->ClipBox(nextX + horizontalStep, position.y + .45f, feetZ + climbStep))
 					climbStep -= 0.9f;
-				if (climbStep < -2.36f && !IsInDangerOfFalling({nextX, position.y, 0}, fsynctics,
-				                                               feetZ, maxClimbStep, true)) {
+				if (climbStep < -2.36f &&
+				    !IsInDangerOfFalling({longSteps.first, position.y, 0}, fsynctics, feetZ,
+				                         maxClimbStep, true)) {
 					// Able to climb?
 					position.x = nextX;
 					climb = true;
 				} else {
 					velocity.x = 0.f;
+					fallPreventedTmp = true;
 				}
 			} else {
 				velocity.x = 0.f;
@@ -1100,10 +1111,13 @@ namespace spades {
 				climbStep -= 0.9f;
 
 			if (climbStep < -1.36f) {
-				if (!IsInDangerOfFalling({position.x, nextY, 0}, fsynctics, feetZ, maxClimbStep))
+				if (!IsInDangerOfFalling({position.x, longSteps.second, 0}, fsynctics, feetZ,
+				                         maxClimbStep))
 					position.y = nextY;
-				else
+				else {
 					velocity.y = 0.f;
+					fallPreventedTmp = true;
+				}
 			} else if (!(input.crouch) && !input.sprint && !climb) {
 				climbStep = 0.35f;
 				while (
@@ -1111,12 +1125,14 @@ namespace spades {
 				  !map->ClipBox(position.x - .45f, nextY + horizontalStep, feetZ + climbStep) &&
 				  !map->ClipBox(position.x + .45f, nextY + horizontalStep, feetZ + climbStep))
 					climbStep -= 0.9f;
-				if (climbStep < -2.36f && !IsInDangerOfFalling({position.x, nextY, 0}, fsynctics,
-				                                               feetZ, maxClimbStep, true)) {
+				if (climbStep < -2.36f &&
+				    !IsInDangerOfFalling({position.x, longSteps.second, 0}, fsynctics, feetZ,
+				                         maxClimbStep, true)) {
 					position.y = nextY;
 					climb = true;
 				} else {
 					velocity.y = 0.f;
+					fallPreventedTmp = true;
 				}
 			} else if (!climb) {
 				velocity.y = 0.f;
@@ -1134,6 +1150,7 @@ namespace spades {
 				feetZ += velocity.z * fsynctics * 32.f;
 			}
 
+			this->fallPrevented = fallPreventedTmp;
 			blocksUnderneath->Update({position.x, position.y, feetZ + maxClimbStep});
 
 			// Landing on block(s)
@@ -1149,6 +1166,18 @@ namespace spades {
 			}
 
 			SmoothEyeTransition();
+		}
+
+		Player::horizontalSteps_t Player::GetLongHorizontalSteps(float horizontalStep) const {
+			constexpr float aCoeff = 5.f;
+			constexpr float bCoeff = .1f;
+			float longNextX = aCoeff * horizontalStep * velocity.x + position.x;
+			float longNextY = aCoeff * horizontalStep * velocity.y + position.y;
+
+			longNextX += (velocity.x >= 0) ? bCoeff : -bCoeff;
+			longNextY += (velocity.y >= 0) ? bCoeff : -bCoeff;
+
+			return {longNextX, longNextY};
 		}
 
 		bool Player::IsInDangerOfFalling(const Vector3 &newPosition, float fsynctics, float feetZ,

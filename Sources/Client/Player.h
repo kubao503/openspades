@@ -128,12 +128,16 @@ namespace spades {
 			float respawnTime;
 
 			std::unique_ptr<BlocksUnderneath> blocksUnderneath;
+			bool fallPrevented;
 
 			void SmoothEyeTransition();
 			void MovePlayer(float fsynctics);
 			void BoxClipMove(float fsynctics);
 			bool IsInDangerOfFalling(const Vector3 &, float, float, float, bool = false) const;
 			bool TryUncrouch();
+
+			using horizontalSteps_t = std::pair<float, float>;
+			horizontalSteps_t GetLongHorizontalSteps(float) const;
 
 			void UseSpade();
 			void DigWithSpade();
@@ -159,6 +163,7 @@ namespace spades {
 			IntVector3 GetBlockColor() { return blockColor; }
 			ToolType GetTool() { return tool; }
 			bool IsLocalPlayer();
+			bool FallPrevented() const { return fallPrevented; }
 
 			PlayerInput GetInput() { return input; }
 			WeaponInput GetWeaponInput() { return weapInput; }

@@ -427,6 +427,13 @@ namespace spades {
 			// Uncrouching may be prevented by an obstacle
 			inp.crouch = player.GetInput().crouch;
 
+			if (player.FallPrevented()) {
+				inp.moveBackward = false;
+				inp.moveForward = false;
+				inp.moveLeft = false;
+				inp.moveRight = false;
+			}
+
 			// send player input
 			{
 				PlayerInput sentInput = inp;
