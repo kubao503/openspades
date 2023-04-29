@@ -190,8 +190,10 @@ namespace spades {
 			void GotBlock();
 
 			bool IsToolWeapon() { return tool == ToolWeapon; }
+			bool IsToolBlock() { return tool == ToolBlock; }
 			bool IsToolSelectable(ToolType);
 			bool IsAwaitingReloadCompletion() { return reloadingServerSide; }
+			bool WillBuildBeSuccessful();
 
 			void SetPosition(const Vector3 &);
 			void SetOrientation(const Vector3 &);

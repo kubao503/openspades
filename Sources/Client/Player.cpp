@@ -175,10 +175,12 @@ namespace spades {
 					  world.GetTime() + std::max(GetToolPrimaryDelay(), GetToolSecondaryDelay());
 				}
 
+				// Build cooldown
 				if (world.GetTime() < nextBlockTime) {
 					newInput.primary = false;
 					newInput.secondary = false;
 				}
+
 				if (newInput.secondary)
 					newInput.primary = false;
 				if (newInput.secondary != weapInput.secondary) {
@@ -272,6 +274,16 @@ namespace spades {
 			}
 
 			weapInput = newInput;
+		}
+
+		bool Player::WillBuildBeSuccessful() {
+			if (IsBlockCursorActive()) {
+				std::vector<IntVector3> blocks =
+				  GetWorld().CubeLine(blockCursorDragPos, blockCursorPos, 256);
+				if ((int)blocks.size() <= blockStocks)
+					return true;
+			}
+			return false;
 		}
 
 		void Player::Reload() {
