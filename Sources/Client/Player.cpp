@@ -39,7 +39,7 @@ namespace spades {
 
 		Player::Player(World &w, int playerId, WeaponType wType, int teamId, Vector3 position,
 		               IntVector3 color)
-		    : world(w), blocksUnderneath{std::make_unique<BlocksUnderneath>(w)} {
+		    : world(w), blocksUnderneath{new BlocksUnderneath(w)} {
 			SPADES_MARK_FUNCTION();
 
 			lastClimbTime = -100;
