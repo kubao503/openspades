@@ -90,9 +90,13 @@ DEFINE_SPADES_SETTING(cg_keyAutoFocus, "MiddleMouseButton");
 namespace spades {
 	namespace client {
 
-		bool Client::WantsToBeClosed() { return readyToClose; }
+		bool Client::WantsToBeClosed() {
+			return readyToClose;
+		}
 
-		void Client::Closing() { SPADES_MARK_FUNCTION(); }
+		void Client::Closing() {
+			SPADES_MARK_FUNCTION();
+		}
 
 		bool Client::NeedsAbsoluteMouseCoordinate() {
 			SPADES_MARK_FUNCTION();
@@ -429,7 +433,11 @@ namespace spades {
 					} else if (CheckKey(cg_keyJump, name)) {
 						playerInput.jump = down;
 					} else if (CheckKey(cg_keyAttack, name)) {
-						weapInput.primary = down;
+						if (p.IsBuildingBlocks()) {
+							p.StopBuildingBlocks();
+							weapInput.secondary = false;
+						} else
+							weapInput.primary = down;
 					} else if (CheckKey(cg_keyAltAttack, name)) {
 						auto lastVal = weapInput.secondary;
 						if (world->GetLocalPlayer()->IsToolWeapon() && (!cg_holdAimDownSight)) {

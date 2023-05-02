@@ -112,7 +112,7 @@ namespace spades {
 			bool holdingGrenade;
 			float grenadeTime;
 			bool blockCursorActive;
-			bool blockCursorDragging;
+			bool buildingBlocks;
 			IntVector3 blockCursorPos;
 			IntVector3 blockCursorDragPos;
 			bool lastSingleBlockBuildSeqDone;
@@ -175,11 +175,12 @@ namespace spades {
 			void SetHeldBlockColor(IntVector3);
 			void ForceJump();
 			bool IsBlockCursorActive();
-			bool IsBlockCursorDragging();
+			bool IsBuildingBlocks();
 			IntVector3 GetBlockCursorPos() { return blockCursorPos; }
 			IntVector3 GetBlockCursorDragPos() { return blockCursorDragPos; }
 			bool CanActivateDelayedBlockPlacement() { return canPending; }
 			bool IsReadyToUseTool();
+			void StopBuildingBlocks() { buildingBlocks = false; }
 
 			// ammo counts
 			int GetNumBlocks() { return blockStocks; }

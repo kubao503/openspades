@@ -498,7 +498,7 @@ namespace spades {
 
 			// show block count when building block lines.
 			if (player.IsAlive() && player.GetTool() == Player::ToolBlock &&
-			    player.GetWeaponInput().secondary && player.IsBlockCursorDragging()) {
+			    player.GetWeaponInput().secondary && player.IsBuildingBlocks()) {
 				if (player.IsBlockCursorActive()) {
 					auto blocks = world->CubeLine(player.GetBlockCursorDragPos(),
 					                              player.GetBlockCursorPos(), 256);

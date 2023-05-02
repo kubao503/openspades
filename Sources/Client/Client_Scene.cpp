@@ -654,7 +654,7 @@ namespace spades {
 					if (p->IsReadyToUseTool() && p->GetTool() == Player::ToolBlock &&
 					    p->IsAlive()) {
 						std::vector<IntVector3> blocks;
-						if (p->IsBlockCursorDragging()) {
+						if (p->IsBuildingBlocks()) {
 							blocks = world->CubeLine(p->GetBlockCursorDragPos(),
 							                         p->GetBlockCursorPos(), 256);
 						} else {

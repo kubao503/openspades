@@ -80,7 +80,7 @@ namespace spades {
 			pendingRestockBlock = false;
 
 			blockCursorActive = false;
-			blockCursorDragging = false;
+			buildingBlocks = false;
 
 			holdingGrenade = false;
 			reloadingServerSide = false;
@@ -89,9 +89,13 @@ namespace spades {
 			fallPrevented = false;
 		}
 
-		Player::~Player() { SPADES_MARK_FUNCTION(); }
+		Player::~Player() {
+			SPADES_MARK_FUNCTION();
+		}
 
-		bool Player::IsLocalPlayer() { return world.GetLocalPlayer() == this; }
+		bool Player::IsLocalPlayer() {
+			return world.GetLocalPlayer() == this;
+		}
 
 		void Player::SetInput(PlayerInput newInput) {
 			SPADES_MARK_FUNCTION();
@@ -186,7 +190,7 @@ namespace spades {
 				if (newInput.secondary != weapInput.secondary) {
 					if (newInput.secondary) {
 						if (IsBlockCursorActive()) {
-							blockCursorDragging = true;
+							buildingBlocks = true;
 							blockCursorDragPos = blockCursorPos;
 						} else {
 							// cannot build; invalid position.
@@ -196,7 +200,7 @@ namespace spades {
 							}
 						}
 					} else {
-						if (IsBlockCursorDragging()) {
+						if (IsBuildingBlocks()) {
 							if (IsBlockCursorActive()) {
 								std::vector<IntVector3> blocks =
 								  GetWorld().CubeLine(blockCursorDragPos, blockCursorPos, 256);
@@ -222,7 +226,7 @@ namespace spades {
 							}
 						}
 
-						blockCursorDragging = false;
+						buildingBlocks = false;
 						blockCursorActive = false;
 					}
 				}
@@ -247,7 +251,7 @@ namespace spades {
 							// wait for building becoming possible
 						}
 
-						blockCursorDragging = false;
+						buildingBlocks = false;
 						blockCursorActive = false;
 					} else {
 						if (!lastSingleBlockBuildSeqDone) {
@@ -331,7 +335,7 @@ namespace spades {
 			tool = t;
 			holdingGrenade = false;
 			blockCursorActive = false;
-			blockCursorDragging = false;
+			buildingBlocks = false;
 
 			reloadingServerSide = false;
 
@@ -344,7 +348,9 @@ namespace spades {
 				world.GetListener()->PlayerChangedTool(*this);
 		}
 
-		void Player::SetHeldBlockColor(spades::IntVector3 col) { blockColor = col; }
+		void Player::SetHeldBlockColor(spades::IntVector3 col) {
+			blockColor = col;
+		}
 
 		void Player::SetPosition(const spades::Vector3 &v) {
 			SPADES_MARK_FUNCTION();
@@ -401,7 +407,7 @@ namespace spades {
 
 			if (!IsAlive()) {
 				// do death cleanup
-				blockCursorDragging = false;
+				buildingBlocks = false;
 			}
 
 			if (tool == ToolSpade) {
@@ -425,7 +431,7 @@ namespace spades {
 				result = map->CastRay2(GetEye(), GetFront(), 12);
 				canPending = false;
 
-				if (blockCursorDragging) {
+				if (buildingBlocks) {
 					// check the starting point is not floating
 					auto start = blockCursorDragPos;
 					if (map->IsSolidWrapped(start.x - 1, start.y, start.z) ||
@@ -440,7 +446,7 @@ namespace spades {
 						if (listener && this == world.GetLocalPlayer()) {
 							listener->LocalPlayerBuildError(BuildFailureReason::InvalidPosition);
 						}
-						blockCursorDragging = false;
+						buildingBlocks = false;
 					}
 				}
 
@@ -1401,7 +1407,9 @@ namespace spades {
 			return 1.f - (nextDigTime - world.GetTime()) / GetToolSecondaryDelay();
 		}
 
-		float Player::GetTimeToNextGrenade() { return nextGrenadeTime - world.GetTime(); }
+		float Player::GetTimeToNextGrenade() {
+			return nextGrenadeTime - world.GetTime();
+		}
 
 		void Player::KilledBy(KillType type, Player &killer, int respawnTime) {
 			SPADES_MARK_FUNCTION();
@@ -1421,9 +1429,13 @@ namespace spades {
 			this->respawnTime = world.GetTime() + respawnTime;
 		}
 
-		bool Player::IsAlive() { return health > 0; }
+		bool Player::IsAlive() {
+			return health > 0;
+		}
 
-		std::string Player::GetName() { return world.GetPlayerPersistent(GetId()).name; }
+		std::string Player::GetName() {
+			return world.GetPlayerPersistent(GetId()).name;
+		}
 
 		float Player::GetWalkAnimationProgress() {
 			return moveDistance * .5f + (float)(moveSteps)*.5f;
@@ -1495,10 +1507,16 @@ namespace spades {
 
 			return hb;
 		}
-		IntVector3 Player::GetColor() { return world.GetTeam(teamId).color; }
+		IntVector3 Player::GetColor() {
+			return world.GetTeam(teamId).color;
+		}
 
-		bool Player::IsCookingGrenade() { return tool == ToolGrenade && holdingGrenade; }
-		float Player::GetGrenadeCookTime() { return world.GetTime() - grenadeTime; }
+		bool Player::IsCookingGrenade() {
+			return tool == ToolGrenade && holdingGrenade;
+		}
+		float Player::GetGrenadeCookTime() {
+			return world.GetTime() - grenadeTime;
+		}
 
 		Weapon &Player::GetWeapon() {
 			SPADES_MARK_FUNCTION();
@@ -1514,7 +1532,9 @@ namespace spades {
 			this->weaponType = weap;
 		}
 
-		void Player::SetTeam(int tId) { teamId = tId; }
+		void Player::SetTeam(int tId) {
+			teamId = tId;
+		}
 
 		bool Player::IsReadyToUseTool() {
 			SPADES_MARK_FUNCTION_DEBUG();
@@ -1558,8 +1578,12 @@ namespace spades {
 		}
 
 #pragma mark - Block Construction
-		bool Player::IsBlockCursorActive() { return tool == ToolBlock && blockCursorActive; }
-		bool Player::IsBlockCursorDragging() { return tool == ToolBlock && blockCursorDragging; }
+		bool Player::IsBlockCursorActive() {
+			return tool == ToolBlock && blockCursorActive;
+		}
+		bool Player::IsBuildingBlocks() {
+			return tool == ToolBlock && buildingBlocks;
+		}
 		float Player::BoxDistanceToBlock(spades::IntVector3 v) {
 			Vector3 e = {(float)v.x, (float)v.y, (float)v.z};
 			e += .5f;
