@@ -158,6 +158,8 @@ namespace spades {
 				audioDevice->PlayLocal(c.GetPointerOrNull(), MakeVector3(.4f, -.3f, .5f),
 				                       AudioParam());
 			}
+
+			weapInput.secondary = false;
 		}
 
 #pragma mark - World Update
