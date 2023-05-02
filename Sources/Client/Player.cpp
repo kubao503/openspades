@@ -120,6 +120,9 @@ namespace spades {
 				}
 			}
 
+			if (buildingBlocks)
+				newInput.sprint = false;
+
 			input = newInput;
 		}
 
