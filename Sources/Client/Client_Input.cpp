@@ -444,8 +444,9 @@ namespace spades {
 							if (down && !world->GetLocalPlayer()->GetWeapon().IsReloading()) {
 								weapInput.secondary = !weapInput.secondary;
 							}
-						} else if (!world->GetLocalPlayer()->IsToolBlock() || down ||
-						           world->GetLocalPlayer()->WillBuildBeSuccessful()) {
+						} else if (!world->GetLocalPlayer()->IsToolBlock() ||
+						           (down && world->GetLocalPlayer()->IsBlockCursorActive()) ||
+						           (!down && world->GetLocalPlayer()->WillBuildBeSuccessful())) {
 							weapInput.secondary = down;
 						}
 						if (world->GetLocalPlayer()->IsToolWeapon() && weapInput.secondary &&
