@@ -30,6 +30,7 @@
 #include "GameMap.h"
 #include "Grenade.h"
 #include "IGameMode.h"
+#include "MapView.h"
 #include "Player.h"
 #include "TCGameMode.h"
 #include "Weapon.h"
@@ -618,7 +619,7 @@ namespace spades {
 						clientPlayers[i]->AddToScene();
 
 						if (hottrackVisible)
-							DrawPlayerHottrack(*otherPlayer);
+							DrawPlayerHottrack(*otherPlayer, i);
 					}
 				}
 
@@ -702,7 +703,7 @@ namespace spades {
 			renderer->EndScene();
 		}
 
-		void Client::DrawPlayerHottrack(Player &otherPlayer)
+		void Client::DrawPlayerHottrack(Player &otherPlayer, int playerSlot)
 		{
 			auto localPlayer = world->GetLocalPlayer();
 
@@ -710,8 +711,11 @@ namespace spades {
 			    || (localPlayer && localPlayer->GetTeamId() == otherPlayer.GetTeamId()))
 				return;
 
-			IntVector3 col = world->GetTeam(otherPlayer.GetTeamId()).color;
-			Vector4 color = Vector4::Make(col.x / 255.f, col.y / 255.f, col.z / 255.f, .7f);
+			extern int palette[32][3];
+			const int colorIndex = playerSlot % 32;
+
+			constexpr float alpha = .7f;
+			Vector4 color = Vector4::Make(palette[colorIndex][0], palette[colorIndex][1], palette[colorIndex][2], alpha);
 
 			Player::HitBoxes hb = otherPlayer.GetHitBoxes();
 			AddDebugObjectToScene(hb.head, color);
