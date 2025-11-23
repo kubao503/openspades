@@ -91,7 +91,7 @@ namespace spades {
 		Vector3 Client::GetFront2D() const {
 			return -MakeVector3(
 				cosf(followAndFreeCameraState.yaw),
-				sinf(followAndFreeCameraState.yaw),
+			    sinf(followAndFreeCameraState.yaw),
 				0.f);
 		}
 
@@ -650,6 +650,8 @@ namespace spades {
 					}
 				}
 
+				DrawMapBoundaries();
+
 				// Draw block cursor
 				if (p) {
 					if (p->IsReadyToUseTool() && p->GetTool() == Player::ToolBlock &&
@@ -703,12 +705,74 @@ namespace spades {
 			renderer->EndScene();
 		}
 
-		void Client::DrawPlayerHottrack(Player &otherPlayer, int playerSlot)
-		{
+		void Client::DrawMapBoundaries() {
+			Handle<IModel> curSingle =
+			  renderer->RegisterModel("Models/MapObjects/BlockCursorSingle.kv6");
+
+			// for (int team = 0; team < 2; ++team) {
+
+			//	const int maxDepth = map->Depth() - 1;
+			//	int minDepth = maxDepth;
+
+			//	const int xBottom =
+			//	  (team == 0 ? map->Width() / 2 - GameMap::HeavenLengthRadius - GameMap::BaseLength
+			//	             : map->Width() / 2 + GameMap::HeavenLengthRadius);
+			//	const int xTop = (team == 0 ? map->Width() / 2 - GameMap::HeavenLengthRadius
+			//	                            : map->Width() / 2 + GameMap::HeavenLengthRadius +
+			//	                                GameMap::BaseLength);
+
+			//	for (int x = xBottom; x < xTop; ++x) {
+			//		for (int y = map->Height() / 2 - GameMap::BaseWidthRadius;
+			//		     y < map->Height() / 2 + GameMap::BaseWidthRadius; ++y) {
+			//			int z = map->Depth() / 2;
+			//			DrawBlock(x, y, z, curSingle);
+			//		}
+			//	}
+
+			//}
+
+			const int maxDepth = map->Depth() - 1;
+
+			DrawBlock(map->Width() / 2 - GameMap::HeavenLengthRadius,
+			          map->Height() / 2 - GameMap::BaseWidthRadius, 3, curSingle);
+			DrawBlock(map->Width() / 2 - GameMap::HeavenLengthRadius,
+			          map->Height() / 2 + GameMap::BaseWidthRadius, 3, curSingle);
+			DrawBlock(map->Width() / 2 + GameMap::HeavenLengthRadius,
+			          map->Height() / 2 - GameMap::BaseWidthRadius, 3, curSingle);
+			DrawBlock(map->Width() / 2 + GameMap::HeavenLengthRadius,
+			          map->Height() / 2 + GameMap::BaseWidthRadius, 3, curSingle);
+
+			DrawBlock(map->Width() / 2 - GameMap::HeavenLengthRadius - GameMap::BaseLength,
+			          map->Height() / 2 - GameMap::BaseWidthRadius, maxDepth - 16, curSingle);
+			DrawBlock(map->Width() / 2 - GameMap::HeavenLengthRadius - GameMap::BaseLength,
+			          map->Height() / 2 + GameMap::BaseWidthRadius, maxDepth - 16, curSingle);
+			DrawBlock(map->Width() / 2 + GameMap::HeavenLengthRadius + GameMap::BaseLength,
+			          map->Height() / 2 - GameMap::BaseWidthRadius, maxDepth - 16, curSingle);
+			DrawBlock(map->Width() / 2 + GameMap::HeavenLengthRadius + GameMap::BaseLength,
+			          map->Height() / 2 + GameMap::BaseWidthRadius, maxDepth - 16, curSingle);
+		}
+
+		void Client::DrawBlock(int x, int y, int z, Handle<IModel> curSingle) {
+			Vector3 color = {1.f, 8.f, 8.f};
+
+			IntVector3 v{x, y, z};
+			ModelRenderParam param;
+			param.ghost = true;
+			param.opacity = .3f;
+			param.customColor = color;
+			param.matrix = Matrix4::Translate(MakeVector3(v.x + .5f, v.y + .5f, v.z + .5f));
+			param.matrix =
+			  param.matrix *
+			  Matrix4::Scale(1.f / 24.f +
+			                 0.0005f); // make cursor larger if needed to stop z-fighting
+			renderer->RenderModel(*curSingle, param);
+		}
+
+		void Client::DrawPlayerHottrack(Player &otherPlayer, int playerSlot) {
 			auto localPlayer = world->GetLocalPlayer();
 
 			if (otherPlayer.IsSpectator() || !otherPlayer.IsAlive()
-			    || (localPlayer && localPlayer->GetTeamId() == otherPlayer.GetTeamId()))
+				|| (localPlayer && localPlayer->GetTeamId() == otherPlayer.GetTeamId()))
 				return;
 
 			extern int palette[32][3];

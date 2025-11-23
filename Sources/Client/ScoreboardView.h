@@ -42,6 +42,7 @@ namespace spades {
 			Handle<IFont> spectatorFont;
 
 			int GetTeamScore(int) const;
+			int GetTeamTowerHeight(int team) const;
 			Vector4 GetTeamColor(int);
 			Vector4 AdjustColor(Vector4 col, float bright, float saturation) const;
 			void DrawPlayers(int team, float left, float top, float width, float height);

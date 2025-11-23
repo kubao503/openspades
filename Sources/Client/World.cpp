@@ -71,7 +71,14 @@ namespace spades {
 		void World::Advance(float dt) {
 			SPADES_MARK_FUNCTION();
 
+			bool blockUpdate = !createdBlocks.empty() || !destroyedBlocks.empty();
+
 			ApplyBlockActions();
+
+			if (mode && blockUpdate) {
+				for (int team = 0; team < 2; ++team)
+					mode->UpdateTowerHeight(team, GetTowerHeight(team));
+			}
 
 			for (const auto &player : players)
 				if (player)
@@ -487,6 +494,35 @@ namespace spades {
 				return hitTestDebugger.get();
 			}
 			return nullptr;
+		}
+
+		unsigned int World::GetTowerHeight(int team) const {
+			if (!map || !mode)
+				return 18;
+
+			const int maxDepth = map->Depth() - 1;
+			int minDepth = maxDepth;
+
+			const int xBottom =
+			  (team == 0 ? map->Width() / 2 - GameMap::HeavenLengthRadius - GameMap::BaseLength
+			             : map->Width() / 2 + GameMap::HeavenLengthRadius);
+			const int xTop =
+			  (team == 0 ? map->Width() / 2 - GameMap::HeavenLengthRadius
+			             : map->Width() / 2 + GameMap::HeavenLengthRadius + GameMap::BaseLength);
+
+			for (int x = xBottom; x < xTop; ++x) {
+				for (int y = map->Height() / 2 - GameMap::BaseWidthRadius;
+				     y < map->Height() / 2 + GameMap::BaseWidthRadius; ++y) {
+					for (int z = 0; z < map->Depth(); ++z) {
+						bool solid = map->IsSolid(x, y, z);
+						if (solid) {
+							minDepth = std::min(minDepth, z);
+						}
+					}
+				}
+			}
+
+			return maxDepth - minDepth;
 		}
 	} // namespace client
 } // namespace spades

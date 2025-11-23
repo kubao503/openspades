@@ -86,6 +86,13 @@ namespace spades {
 			}
 		}
 
+		int ScoreboardView::GetTeamTowerHeight(int team) const {
+			if (!ctf)
+				return 42;
+
+			return ctf->GetTeam(team).towerHeight;
+		}
+
 		Vector4 ScoreboardView::GetTeamColor(int team) {
 			IntVector3 c = world->GetTeam(team).color;
 			return MakeVector4(c.x / 255.f, c.y / 255.f, c.z / 255.f, 1.f);
@@ -195,19 +202,19 @@ namespace spades {
 			// draw scores
 			int capLimit;
 			if (ctf) {
-				capLimit = ctf->GetCaptureLimit();
+				capLimit = ctf->GetCaptureLimit(); // <- aloha
 			} else if (tc) {
 				capLimit = tc->GetNumTerritories();
 			} else {
 				capLimit = -1;
 			}
 			if (capLimit != -1) {
-				str = Format("{0}-{1}", GetTeamScore(0), capLimit);
+				str = Format("{0}-{1} {2}", GetTeamScore(0), capLimit, GetTeamTowerHeight(0));
 				pos.x = scrWidth * .5f - font.Measure(str).x - 15.f;
 				pos.y = teamBarTop + 5.f;
 				font.Draw(str, pos, 1.f, Vector4(1.f, 1.f, 1.f, 0.5f));
 
-				str = Format("{0}-{1}", GetTeamScore(1), capLimit);
+				str = Format("{0}-{1} {2}", GetTeamScore(1), capLimit, GetTeamTowerHeight(1));
 				pos.x = scrWidth * .5f + 15.f;
 				pos.y = teamBarTop + 5.f;
 				font.Draw(str, pos, 1.f, Vector4(1.f, 1.f, 1.f, 0.5f));

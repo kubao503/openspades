@@ -48,6 +48,8 @@ namespace spades {
 			};
 			GameMap();
 
+			enum { BaseLength = 79, HeavenLengthRadius = 50, BaseWidthRadius = 16 };
+
 			/**
 			 * Construct a `GameMap` from VOXLAP5 terrain data supplied by the specified stream.
 			 *

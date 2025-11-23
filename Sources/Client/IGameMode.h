@@ -33,6 +33,7 @@ namespace spades {
 			IGameMode(Mode mode) : mMode(mode) { ; }
 			virtual ~IGameMode() {}
 			Mode ModeType() const { return mMode; }
+			virtual void UpdateTowerHeight(int team, unsigned int height){};
 		};
 	} // namespace client
 } // namespace spades

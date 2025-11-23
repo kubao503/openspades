@@ -35,6 +35,7 @@ namespace spades {
 				unsigned int carrier;
 				Vector3 flagPos;
 				Vector3 basePos;
+				unsigned int towerHeight = 0;
 			};
 			int captureLimit;
 
@@ -47,6 +48,10 @@ namespace spades {
 
 			CTFGameMode(const CTFGameMode &) = delete;
 			void operator=(const CTFGameMode &) = delete;
+
+			void UpdateTowerHeight(int team, unsigned int height) override { 
+				GetTeam(team).towerHeight = height;
+			}
 
 			Team &GetTeam(int t);
 			int GetCaptureLimit() { return captureLimit; }
