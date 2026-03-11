@@ -34,6 +34,7 @@ namespace spades {
 			virtual ~IGameMode() {}
 			Mode ModeType() const { return mMode; }
 			virtual void UpdateTowerHeight(int team, unsigned int height){};
+			virtual void UpdateTowerBaseHalf(int team, unsigned int half){};
 		};
 	} // namespace client
 } // namespace spades

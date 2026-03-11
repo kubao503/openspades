@@ -76,8 +76,10 @@ namespace spades {
 			ApplyBlockActions();
 
 			if (mode && blockUpdate) {
-				for (int team = 0; team < 2; ++team)
+				for (int team = 0; team < 2; ++team) {
 					mode->UpdateTowerHeight(team, GetTowerHeight(team));
+					mode->UpdateTowerBaseHalf(team, GetTowerBaseHalf(team));
+				}
 			}
 
 			for (const auto &player : players)
@@ -290,6 +292,7 @@ namespace spades {
 
 			createdBlocks[CellPos(pos.x, pos.y, pos.z)] = color;
 		}
+
 		void World::DestroyBlock(std::vector<spades::IntVector3> &pos) {
 			std::vector<CellPos> cells;
 			bool allowToDestroyLand = pos.size() == 1;
@@ -498,7 +501,7 @@ namespace spades {
 
 		unsigned int World::GetTowerHeight(int team) const {
 			if (!map || !mode)
-				return 18;
+				return 0;
 
 			const int maxDepth = map->Depth() - 1;
 			int minDepth = maxDepth;
@@ -523,6 +526,33 @@ namespace spades {
 			}
 
 			return maxDepth - minDepth;
+		}
+
+		unsigned int World::GetTowerBaseHalf(int team) const {
+			if (!map || !mode)
+				return 0;
+
+			const int maxDepth = map->Depth() - 1;
+
+			for (unsigned int halfes = 0; halfes < maxDepth * 2; ++halfes) {
+				unsigned int z = halfes / 2;
+				unsigned int x = map->Width() / 2;
+
+				if (team == 0)
+					x += GameMap::HeavenLengthRadius + halfes / 2;
+				else
+					x -= GameMap::HeavenLengthRadius + halfes / 2 + 1;
+
+				if (halfes % 2 != 0)
+					z += 1;
+
+				bool solid = map->IsSolid(x, map->Height() / 2, z);
+
+				if (solid)
+					return halfes;
+			}
+
+			return maxDepth * 2;
 		}
 	} // namespace client
 } // namespace spades

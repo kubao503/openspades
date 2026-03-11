@@ -89,10 +89,8 @@ namespace spades {
 		}
 
 		Vector3 Client::GetFront2D() const {
-			return -MakeVector3(
-				cosf(followAndFreeCameraState.yaw),
-			    sinf(followAndFreeCameraState.yaw),
-				0.f);
+			return -MakeVector3(cosf(followAndFreeCameraState.yaw),
+			                    sinf(followAndFreeCameraState.yaw), 0.f);
 		}
 
 		int Client::GetCameraTargetPlayerId() {
@@ -637,7 +635,6 @@ namespace spades {
 					}
 				}
 
-
 				if (IGameMode::m_CTF == world->GetMode()->ModeType()) {
 					DrawCTFObjects();
 				} else if (IGameMode::m_TC == world->GetMode()->ModeType()) {
@@ -750,6 +747,31 @@ namespace spades {
 			          map->Height() / 2 - GameMap::BaseWidthRadius, maxDepth - 16, curSingle);
 			DrawBlock(map->Width() / 2 + GameMap::HeavenLengthRadius + GameMap::BaseLength,
 			          map->Height() / 2 + GameMap::BaseWidthRadius, maxDepth - 16, curSingle);
+
+			auto mode = world->GetMode();
+			auto ctf = IGameMode::m_CTF == mode->ModeType()
+			             ? dynamic_cast<CTFGameMode *>(mode.get_pointer())
+			             : NULL;
+			if (!ctf)
+				return;
+
+			for (int team = 0; team < 2; ++team) {
+				unsigned halfes = ctf->GetTeam(team).towerBaseHalf;
+				halfes = halfes ? halfes - 1 : 0;
+
+				unsigned int z = halfes / 2;
+				unsigned int x = map->Width() / 2;
+
+				if (team == 0)
+					x += GameMap::HeavenLengthRadius + halfes / 2;
+				else
+					x -= GameMap::HeavenLengthRadius + halfes / 2 + 1;
+
+				if (halfes % 2 != 0)
+					z += 1;
+
+				DrawBlock(x, map->Height() / 2, z, curSingle);
+			}
 		}
 
 		void Client::DrawBlock(int x, int y, int z, Handle<IModel> curSingle) {
@@ -771,15 +793,16 @@ namespace spades {
 		void Client::DrawPlayerHottrack(Player &otherPlayer, int playerSlot) {
 			auto localPlayer = world->GetLocalPlayer();
 
-			if (otherPlayer.IsSpectator() || !otherPlayer.IsAlive()
-				|| (localPlayer && localPlayer->GetTeamId() == otherPlayer.GetTeamId()))
+			if (otherPlayer.IsSpectator() || !otherPlayer.IsAlive() ||
+			    (localPlayer && localPlayer->GetTeamId() == otherPlayer.GetTeamId()))
 				return;
 
 			extern int palette[32][3];
 			const int colorIndex = playerSlot % 32;
 
 			constexpr float alpha = .7f;
-			Vector4 color = Vector4::Make(palette[colorIndex][0], palette[colorIndex][1], palette[colorIndex][2], alpha);
+			Vector4 color = Vector4::Make(palette[colorIndex][0], palette[colorIndex][1],
+			                              palette[colorIndex][2], alpha);
 
 			Player::HitBoxes hb = otherPlayer.GetHitBoxes();
 			AddDebugObjectToScene(hb.head, color);

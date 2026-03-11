@@ -36,6 +36,7 @@ namespace spades {
 				Vector3 flagPos;
 				Vector3 basePos;
 				unsigned int towerHeight = 0;
+				unsigned int towerBaseHalf = 0;
 			};
 			int captureLimit;
 
@@ -51,6 +52,10 @@ namespace spades {
 
 			void UpdateTowerHeight(int team, unsigned int height) override { 
 				GetTeam(team).towerHeight = height;
+			}
+
+			void UpdateTowerBaseHalf(int team, unsigned int half) override {
+				GetTeam(team).towerBaseHalf = half;
 			}
 
 			Team &GetTeam(int t);

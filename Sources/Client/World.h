@@ -163,6 +163,7 @@ namespace spades {
 			size_t GetNumPlayers();
 
 			unsigned int GetTowerHeight(int team) const;
+			unsigned int GetTowerBaseHalf(int team) const;
 
 			stmp::optional<int> GetLocalPlayerIndex() { return localPlayerIndex; }
 			void SetLocalPlayerIndex(stmp::optional<int> p) { localPlayerIndex = p; }
