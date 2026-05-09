@@ -711,43 +711,25 @@ namespace spades {
 		void Client::FollowNextPlayer(bool reverse) {
 			SPAssert(world->GetLocalPlayer());
 
-			auto &localPlayer = *world->GetLocalPlayer();
-			int myTeam = localPlayer.GetTeamId();
-
-			bool localPlayerIsSpectator = localPlayer.IsSpectator();
-
 			int nextId = FollowsNonLocalPlayer(GetCameraMode())
 			               ? followedPlayerId
 			               : world->GetLocalPlayerIndex().value();
+
 			do {
-				reverse ? --nextId : ++nextId;
+				if (followCameraState.deathCamEnabled) {
+					followCameraState.deathCamEnabled = false;
+					nextId = killerPlayerId;
+				} else {
+					reverse ? --nextId : ++nextId;
+				}
 
 				if (nextId >= static_cast<int>(world->GetNumPlayerSlots()))
 					nextId = 0;
 				if (nextId < 0)
 					nextId = static_cast<int>(world->GetNumPlayerSlots() - 1);
 
-				stmp::optional<Player &> p = world->GetPlayer(nextId);
-				if (!p || p->IsSpectator()) {
-					// Do not follow a non-existent player or spectator
-					continue;
-				}
-
-				if (!localPlayerIsSpectator && p->GetTeamId() != myTeam) {
-					continue;
-				}
-
-				if (!localPlayerIsSpectator && cg_skipDeadPlayersWhenDead && !p->IsAlive()) {
-					// Skip dead players unless the local player is not a spectator
-					continue;
-				}
-
-				if (p->GetFront().GetPoweredLength() < .01f) {
-					// Do not follow a player with an invalid state
-					continue;
-				}
-
-				break;
+				if (CanPlayerBeFollowed(nextId))
+					break;
 			} while (nextId != followedPlayerId);
 
 			followedPlayerId = nextId;
@@ -756,6 +738,35 @@ namespace spades {
 			} else {
 				followCameraState.enabled = true;
 			}
+		}
+
+		bool Client::CanPlayerBeFollowed(int playerId) {
+			auto &localPlayer = *world->GetLocalPlayer();
+
+			bool localPlayerIsSpectator = localPlayer.IsSpectator();
+
+			stmp::optional<Player &> p = world->GetPlayer(playerId);
+			if (!p || p->IsSpectator()) {
+				// Do not follow a non-existent player or spectator
+				return false;
+			}
+
+			// Skip players from other team
+			// if (!localPlayerIsSpectator && p->GetTeamId() != myTeam) {
+			//	continue;
+			//}
+
+			if (!localPlayerIsSpectator && cg_skipDeadPlayersWhenDead && !p->IsAlive()) {
+				// Skip dead players unless the local player is not a spectator
+				return false;
+			}
+
+			if (p->GetFront().GetPoweredLength() < .01f) {
+				// Do not follow a player with an invalid state
+				return false;
+			}
+
+			return true;
 		}
 	} // namespace client
 } // namespace spades

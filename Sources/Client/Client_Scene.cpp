@@ -78,7 +78,7 @@ namespace spades {
 						return ClientCameraMode::ThirdPersonFollow;
 					}
 				} else {
-					if (p->IsSpectator()) {
+					if (p->IsSpectator() || (!p->IsAlive() && !followCameraState.deathCamEnabled)) {
 						return ClientCameraMode::Free;
 					} else {
 						// Look at your own cadaver!

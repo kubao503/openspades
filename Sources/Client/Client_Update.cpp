@@ -179,7 +179,8 @@ namespace spades {
 					playerInput = PlayerInput();
 				}
 
-				if (player->GetTeamId() >= 2) {
+				if (player->GetTeamId() >= 2 ||
+				    (!player->IsAlive() && !followCameraState.deathCamEnabled)) {
 					UpdateLocalSpectator(dt);
 				} else {
 					UpdateLocalPlayer(dt);
@@ -821,6 +822,8 @@ namespace spades {
 			// The local player is dead; initialize the look-you-are-dead cam
 			if (&victim == world->GetLocalPlayer()) {
 				followCameraState.enabled = false;
+				followCameraState.deathCamEnabled = true;
+				killerPlayerId = killer.GetId();
 
 				Vector3 v = -victim.GetFront();
 				followAndFreeCameraState.yaw = atan2(v.y, v.x);

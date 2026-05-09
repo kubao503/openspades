@@ -63,6 +63,7 @@ namespace spades {
 
 			// Prepare the spectate mode
 			followCameraState.enabled = false;
+			followCameraState.deathCamEnabled = false;
 			freeCameraState.position = MakeVector3(256, 256, 30);
 			freeCameraState.velocity = MakeVector3(0, 0, 0);
 		}
