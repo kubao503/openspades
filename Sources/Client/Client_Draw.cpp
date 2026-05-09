@@ -798,6 +798,15 @@ namespace spades {
 				DrawHurtScreenEffect();
 				DrawHottrackedPlayerName();
 
+				if (hottrackVisible) {
+					for (size_t i = 0; i < world->GetNumPlayerSlots(); i++) {
+						auto otherPlayer = world->GetPlayer(static_cast<unsigned int>(i));
+						if (otherPlayer && !otherPlayer->IsSpectator() && otherPlayer->IsAlive() &&
+						    p->GetTeamId() != otherPlayer->GetTeamId())
+							DrawPlayerName(*otherPlayer, *p);
+					}
+				}
+
 				if (!cg_hideHud) {
 					tcView->Draw();
 

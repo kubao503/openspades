@@ -800,7 +800,7 @@ namespace spades {
 			extern int palette[32][3];
 			const int colorIndex = playerSlot % 32;
 
-			constexpr float alpha = .7f;
+			constexpr float alpha = .0f;
 			Vector4 color = Vector4::Make(palette[colorIndex][0], palette[colorIndex][1],
 			                              palette[colorIndex][2], alpha);
 
@@ -810,6 +810,14 @@ namespace spades {
 			AddDebugObjectToScene(hb.limbs[0], color);
 			AddDebugObjectToScene(hb.limbs[1], color);
 			AddDebugObjectToScene(hb.limbs[2], color);
+
+			// Shot line hottrack
+			Vector3 muzzle = otherPlayer.GetEye();
+			muzzle += otherPlayer.GetFront() * 0.01f;
+			Vector3 dir = otherPlayer.GetFront();
+			dir.Normalize();
+			color.w = .8f; // Alpha
+			renderer->AddDebugLine(muzzle, muzzle + dir * 100, color);
 		}
 
 		void Client::UpdateMatrices() {
