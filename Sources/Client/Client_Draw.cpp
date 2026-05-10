@@ -322,6 +322,35 @@ namespace spades {
 			font.DrawShadow(buf, pos, 1.f, MakeVector4(1, 1, 1, 1), MakeVector4(0, 0, 0, 0.5));
 		}
 
+		void Client::DrawGrenadeSight(Player& hottrackedPlayer, Player& localPlayer) {
+			char buf[64];
+
+			Vector3 hottrackedPlayerPosition = hottrackedPlayer.GetPosition();
+
+			//Vector3 muzzle = localPlayer.GetEye() + localPlayer.GetFront() * 0.1f;
+			Vector3 direction = hottrackedPlayer.GetPosition() - localPlayer.GetEye();
+			float dist = Vector2(direction.x, direction.y).GetLength();
+			int idist = (int)floorf(dist + .5f);
+			int iheight = (int)floorf(direction.z + .5f);
+
+			sprintf(buf, "%d %d", idist, -iheight);
+
+			float tangens = 1.0f; // Put vv / v tangens here
+			Vector3 sightPosition = Vector3{hottrackedPlayerPosition.x, hottrackedPlayerPosition.y,
+			                                localPlayer.GetPosition().z - dist * tangens};
+
+			Vector3 posxyz = Project(sightPosition);
+			Vector2 pos = {posxyz.x, posxyz.y};
+			pos.y += (int)cg_playerNameY;
+			pos.x += (int)cg_playerNameX;
+
+			IFont &font = fontManager->GetGuiFont();
+			Vector2 size = font.Measure(buf);
+			pos.x -= size.x * .5f;
+			pos.y -= size.y;
+			font.DrawShadow(buf, pos, 1.f, MakeVector4(1, 1, 1, 1), MakeVector4(0, 0, 0, 0.5));
+		}
+
 		void Client::DrawDebugAim() {
 			SPADES_MARK_FUNCTION();
 
@@ -802,8 +831,10 @@ namespace spades {
 					for (size_t i = 0; i < world->GetNumPlayerSlots(); i++) {
 						auto otherPlayer = world->GetPlayer(static_cast<unsigned int>(i));
 						if (otherPlayer && !otherPlayer->IsSpectator() && otherPlayer->IsAlive() &&
-						    p->GetTeamId() != otherPlayer->GetTeamId())
+						    p->GetTeamId() != otherPlayer->GetTeamId()) {
 							DrawPlayerName(*otherPlayer, *p);
+							DrawGrenadeSight(*otherPlayer, *p);
+						}
 					}
 				}
 

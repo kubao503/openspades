@@ -381,6 +381,7 @@ namespace spades {
 
 			void DrawHottrackedPlayerName();
 			void DrawPlayerName(Player &hottrackedPlayer, Player &localPlayer);
+			void DrawGrenadeSight(Player &hottrackedPlayer, Player &localPlayer);
 			void DrawHurtScreenEffect();
 			void DrawHurtSprites();
 			void DrawHealth();
