@@ -322,33 +322,97 @@ namespace spades {
 			font.DrawShadow(buf, pos, 1.f, MakeVector4(1, 1, 1, 1), MakeVector4(0, 0, 0, 0.5));
 		}
 
-		void Client::DrawGrenadeSight(Player& hottrackedPlayer, Player& localPlayer) {
-			char buf[64];
+		constexpr double v = 32.0;
+		constexpr double g = 32.0;
 
+		// x = -sqrt(2) sqrt(v^2/g^2 - sqrt(v^4 - 2 v^2 g h - g^2 s^2)/g^2 - h/g)
+		// x = sqrt(2) sqrt(v^2/g^2 - sqrt(v^4 - 2 v^2 g h - g^2 s^2)/g^2 - h/g)
+		// x = -sqrt(2) sqrt(v^2/g^2 + sqrt(v^4 - 2 v^2 g h - g^2 s^2)/g^2 - h/g)
+		// x = sqrt(2) sqrt(v^2/g^2 + sqrt(v^4 - 2 v^2 g h - g^2 s^2)/g^2 - h/g)
+		std::vector<double> GetGrenadeTimeToImpact(float distance, float height, std::string name) {
+			const double inner =
+			  std::pow(v, 4) - 2.0 * std::pow(v, 2) * g * height - std::pow(g, 2) * std::pow(distance, 2);
+			const double base = std::pow(v, 2) / std::pow(g, 2) - height / g;
+
+			const double minusTerm =
+			  std::sqrt(2.0) * std::sqrt(base - std::sqrt(inner) / std::pow(g, 2));
+			const double plusTerm =
+			  std::sqrt(2.0) * std::sqrt(base + std::sqrt(inner) / std::pow(g, 2));
+
+			return {-minusTerm, minusTerm, -plusTerm, plusTerm};
+		}
+
+		double GetGrenadeHeightAtTime(double time, double distance, double initHeight,
+		                             double upwards) {
+			const double constantSpeedTerm = sqrt(std::pow(v * time, 2) - std::pow(distance, 2));
+			return -g * std::pow(time, 2) / 2.0 + (upwards ? constantSpeedTerm : -constantSpeedTerm)
+			        + initHeight;
+		}
+
+		std::vector<double>
+		ValidateGrenadeTimesToImpact(const std::vector<double>& times) {
+			std::vector<double> results;
+			for (auto t : times) {
+				if (t > 0.0f) {
+					results.push_back(t);
+				}
+			}
+			return results;
+		}
+
+		void Client::DrawGrenadeSight(Player& hottrackedPlayer, Player& localPlayer) {
 			Vector3 hottrackedPlayerPosition = hottrackedPlayer.GetPosition();
 
-			//Vector3 muzzle = localPlayer.GetEye() + localPlayer.GetFront() * 0.1f;
-			Vector3 direction = hottrackedPlayer.GetPosition() - localPlayer.GetEye();
+			const Vector3 playerPosition =
+			  localPlayer.IsSpectator() ? freeCameraState.position : localPlayer.GetEye();
+			
+			Vector3 direction = hottrackedPlayer.GetPosition() - playerPosition;
+
 			float dist = Vector2(direction.x, direction.y).GetLength();
-			int idist = (int)floorf(dist + .5f);
-			int iheight = (int)floorf(direction.z + .5f);
 
-			sprintf(buf, "%d %d", idist, -iheight);
+			const auto timesToImpact = GetGrenadeTimeToImpact(dist, -direction.z, hottrackedPlayer.GetName());
 
-			float tangens = 1.0f; // Put vv / v tangens here
-			Vector3 sightPosition = Vector3{hottrackedPlayerPosition.x, hottrackedPlayerPosition.y,
-			                                localPlayer.GetPosition().z - dist * tangens};
+			const auto validatedTimesToImpact = ValidateGrenadeTimesToImpact(timesToImpact);
 
-			Vector3 posxyz = Project(sightPosition);
-			Vector2 pos = {posxyz.x, posxyz.y};
-			pos.y += (int)cg_playerNameY;
-			pos.x += (int)cg_playerNameX;
+			for (auto t : validatedTimesToImpact) {
+				double hVelocity = dist / t;
+				double vVelocity = std::sqrt(std::pow(v, 2) - std::pow(hVelocity, 2));
 
-			IFont &font = fontManager->GetGuiFont();
-			Vector2 size = font.Measure(buf);
-			pos.x -= size.x * .5f;
-			pos.y -= size.y;
-			font.DrawShadow(buf, pos, 1.f, MakeVector4(1, 1, 1, 1), MakeVector4(0, 0, 0, 0.5));
+				double grenadeHeightUpwards =
+				  GetGrenadeHeightAtTime(t, dist, playerPosition.z, true);
+				double grenadeHeightDownwards =
+				  GetGrenadeHeightAtTime(t, dist, playerPosition.z, false);
+
+				double grenadeErrorUpwards =
+				  std::fabs(grenadeHeightUpwards - hottrackedPlayer.GetPosition().z);
+				double grenadeErrorDownwards =
+				  std::fabs(grenadeHeightDownwards - hottrackedPlayer.GetPosition().z);
+
+				if (grenadeErrorDownwards < grenadeErrorUpwards)
+					vVelocity = -vVelocity;
+
+				std::cout << "grenadeErrorUpwards: " << grenadeErrorUpwards
+				          << ", grenadeErrorDownwards: " << grenadeErrorDownwards << '\n';
+
+				double tangens = vVelocity / hVelocity;
+				Vector3 sightPosition =
+				  Vector3{hottrackedPlayerPosition.x, hottrackedPlayerPosition.y,
+				          static_cast<float>(playerPosition.z - dist * tangens)};
+
+				Vector3 posxyz = Project(sightPosition);
+				Vector2 pos = {posxyz.x, posxyz.y};
+
+				char buf[16];
+				sprintf(buf, "%.2f", t);
+
+				IFont &font = fontManager->GetGuiFont();
+				Vector2 size = font.Measure(buf);
+				pos.x -= size.x * .5f;
+				pos.y -= size.y * .5f;
+				font.DrawShadow(buf, pos, 1.f, MakeVector4(.6f, 1, .6f, 1),
+				                MakeVector4(0, 0, 0, 0.5));
+			}
+			std::cout << '\n';
 		}
 
 		void Client::DrawDebugAim() {
