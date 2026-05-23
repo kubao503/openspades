@@ -324,6 +324,7 @@ namespace spades {
 
 		constexpr double v = 32.0;
 		constexpr double g = 32.0;
+		constexpr double maxCookTime = 3.0;
 
 		// x = -sqrt(2) sqrt(v^2/g^2 - sqrt(v^4 - 2 v^2 g h - g^2 s^2)/g^2 - h/g)
 		// x = sqrt(2) sqrt(v^2/g^2 - sqrt(v^4 - 2 v^2 g h - g^2 s^2)/g^2 - h/g)
@@ -374,14 +375,14 @@ namespace spades {
 
 			const auto validatedTimesToImpact = ValidateGrenadeTimesToImpact(timesToImpact);
 
-			for (auto t : validatedTimesToImpact) {
-				double hVelocity = dist / t;
+			for (auto tti : validatedTimesToImpact) {
+				double hVelocity = dist / tti;
 				double vVelocity = std::sqrt(std::pow(v, 2) - std::pow(hVelocity, 2));
 
 				double grenadeHeightUpwards =
-				  GetGrenadeHeightAtTime(t, dist, playerPosition.z, true);
+				  GetGrenadeHeightAtTime(tti, dist, playerPosition.z, true);
 				double grenadeHeightDownwards =
-				  GetGrenadeHeightAtTime(t, dist, playerPosition.z, false);
+				  GetGrenadeHeightAtTime(tti, dist, playerPosition.z, false);
 
 				double grenadeErrorUpwards =
 				  std::fabs(grenadeHeightUpwards - hottrackedPlayer.GetPosition().z);
@@ -402,14 +403,21 @@ namespace spades {
 				Vector3 posxyz = Project(sightPosition);
 				Vector2 pos = {posxyz.x, posxyz.y};
 
+				const double remainingCookTime =
+				  localPlayer.IsCookingGrenade() ? (maxCookTime - localPlayer.GetGrenadeCookTime())
+				                                 : maxCookTime;
+				double timeToThrow = remainingCookTime - tti;
+
 				char buf[16];
-				sprintf(buf, "%.2f", t);
+				sprintf(buf, "%.2f", timeToThrow);
 
 				IFont &font = fontManager->GetGuiFont();
 				Vector2 size = font.Measure(buf);
 				pos.x -= size.x * .5f;
 				pos.y -= size.y * .5f;
-				font.DrawShadow(buf, pos, 1.f, MakeVector4(.6f, 1, .6f, 1),
+				const Vector4 green = MakeVector4(.6f, 1, .6f, 1);
+				const Vector4 red = MakeVector4(1, .6f, .6f, 1);
+				font.DrawShadow(buf, pos, 1.f, (timeToThrow > 0) ? green : red,
 				                MakeVector4(0, 0, 0, 0.5));
 			}
 			std::cout << '\n';
