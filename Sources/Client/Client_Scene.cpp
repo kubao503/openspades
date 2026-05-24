@@ -828,8 +828,10 @@ namespace spades {
 			  lastSceneDef.ToOpenGLProjectionMatrix() * lastSceneDef.ToViewMatrix();
 		}
 
-		Vector3 Client::Project(spades::Vector3 v) {
+		stmp::optional<Vector3> Client::Project(spades::Vector3 v) {
 			Vector4 screenHomV = lastViewProjectionScreenMatrix * v;
+			if (screenHomV.w < 0.f)
+				return {};
 			return screenHomV.GetXYZ() / screenHomV.w;
 		}
 	} // namespace client

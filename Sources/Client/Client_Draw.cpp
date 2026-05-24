@@ -301,8 +301,11 @@ namespace spades {
 		}
 
 		void Client::DrawPlayerName(Player &hottrackedPlayer, Player &localPlayer) {
-			Vector3 posxyz = Project(hottrackedPlayer.GetEye());
-			Vector2 pos = {posxyz.x, posxyz.y};
+			stmp::optional<Vector3> posxyz = Project(hottrackedPlayer.GetEye());
+			if (!posxyz)
+				return;
+
+			Vector2 pos = {posxyz->x, posxyz->y};
 			char buf[64];
 			if ((int)cg_playerNames == 1) {
 				float dist = (hottrackedPlayer.GetEye() - localPlayer.GetEye()).GetLength();
@@ -330,7 +333,7 @@ namespace spades {
 		// x = sqrt(2) sqrt(v^2/g^2 - sqrt(v^4 - 2 v^2 g h - g^2 s^2)/g^2 - h/g)
 		// x = -sqrt(2) sqrt(v^2/g^2 + sqrt(v^4 - 2 v^2 g h - g^2 s^2)/g^2 - h/g)
 		// x = sqrt(2) sqrt(v^2/g^2 + sqrt(v^4 - 2 v^2 g h - g^2 s^2)/g^2 - h/g)
-		std::vector<double> GetGrenadeTimeToImpact(float distance, float height, std::string name) {
+		std::vector<double> GetGrenadeTimeToImpact(float distance, float height) {
 			const double inner =
 			  std::pow(v, 4) - 2.0 * std::pow(v, 2) * g * height - std::pow(g, 2) * std::pow(distance, 2);
 			const double base = std::pow(v, 2) / std::pow(g, 2) - height / g;
@@ -346,7 +349,8 @@ namespace spades {
 		double GetGrenadeHeightAtTime(double time, double distance, double initHeight,
 		                             double upwards) {
 			const double constantSpeedTerm = sqrt(std::pow(v * time, 2) - std::pow(distance, 2));
-			return -g * std::pow(time, 2) / 2.0 + (upwards ? constantSpeedTerm : -constantSpeedTerm)
+			// Height is negative
+			return g * std::pow(time, 2) / 2.0 + (upwards ? -constantSpeedTerm : constantSpeedTerm)
 			        + initHeight;
 		}
 
@@ -371,7 +375,7 @@ namespace spades {
 
 			float dist = Vector2(direction.x, direction.y).GetLength();
 
-			const auto timesToImpact = GetGrenadeTimeToImpact(dist, -direction.z, hottrackedPlayer.GetName());
+			const auto timesToImpact = GetGrenadeTimeToImpact(dist, -direction.z);
 
 			const auto validatedTimesToImpact = ValidateGrenadeTimesToImpact(timesToImpact);
 
@@ -392,16 +396,16 @@ namespace spades {
 				if (grenadeErrorDownwards < grenadeErrorUpwards)
 					vVelocity = -vVelocity;
 
-				std::cout << "grenadeErrorUpwards: " << grenadeErrorUpwards
-				          << ", grenadeErrorDownwards: " << grenadeErrorDownwards << '\n';
-
 				double tangens = vVelocity / hVelocity;
 				Vector3 sightPosition =
 				  Vector3{hottrackedPlayerPosition.x, hottrackedPlayerPosition.y,
 				          static_cast<float>(playerPosition.z - dist * tangens)};
 
-				Vector3 posxyz = Project(sightPosition);
-				Vector2 pos = {posxyz.x, posxyz.y};
+				stmp::optional<Vector3> posxyz = Project(sightPosition);
+				if (!posxyz)
+					continue; // Object behind the camera
+
+				Vector2 pos = {posxyz->x, posxyz->y};
 
 				const double remainingCookTime =
 				  localPlayer.IsCookingGrenade() ? (maxCookTime - localPlayer.GetGrenadeCookTime())
@@ -420,7 +424,6 @@ namespace spades {
 				font.DrawShadow(buf, pos, 1.f, (timeToThrow > 0) ? green : red,
 				                MakeVector4(0, 0, 0, 0.5));
 			}
-			std::cout << '\n';
 		}
 
 		void Client::DrawDebugAim() {
